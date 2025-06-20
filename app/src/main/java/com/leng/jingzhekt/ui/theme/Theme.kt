@@ -274,7 +274,8 @@ fun AppTheme(
               dynamicLightColorScheme(context)
       }
       darkTheme -> darkScheme
-      else -> lightScheme
+      else ->
+          lightScheme
   }
   MaterialTheme(
     colorScheme = colorScheme,
