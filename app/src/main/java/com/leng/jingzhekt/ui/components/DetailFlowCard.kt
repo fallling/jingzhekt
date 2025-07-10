@@ -50,6 +50,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.ui.tooling.preview.Wallpapers
+import java.time.YearMonth
 
 @Preview
 @Composable
@@ -119,94 +120,21 @@ fun DetailFlowCard(){
 @Preview(showBackground = true, wallpaper = Wallpapers.NONE)
 @Composable
 fun BillToolbar() {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth().
-                height(40.dp).
-                padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            var selectedIndex by remember { mutableIntStateOf(0) }
-            val list = listOf("流水", "日历")
-            TabRow(
-                selectedTabIndex = selectedIndex,
-                modifier = Modifier
-                    .width(120.dp)
-                    .clip(RoundedCornerShape(50)),
-                containerColor = Color(0xFFE3F2FD),
-                indicator = { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(
-                        Modifier
-                            .tabIndicatorOffset(tabPositions[selectedIndex])
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(50)),
-                        color = Color(0xFF81D4FA)
-                    )
-                },
-                divider = {},
-                tabs = {
-                    list.forEachIndexed { index, text ->
-                        Tab(
-                            modifier = Modifier
-                                .zIndex(2f).
-                                height(24.dp),
-                            selected = selectedIndex == index,
-                            onClick = { selectedIndex = index },
-                            text = {
-                                Text(
-                                    text,
-                                    color = if (selectedIndex == index) Color.Black else Color.Gray,
-                                    fontWeight = if (selectedIndex == index) FontWeight.Bold else FontWeight.Normal
-                                )
-                            }
-                        )
-                    }
-                }
-            )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        var selectedIndex by remember { mutableIntStateOf(0) }
+        val list = listOf("流水", "日历")
 
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(Color(0xFFE3F2FD))
-                    .padding(2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .clickable { /* Previous month */ }
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                        contentDescription = "Previous month",
-                        tint = Color.Gray
-                    )
-                }
-                Text(
-                    "2025年6月",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .clickable { /* Next month */ }
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next month",
-                        tint = Color.Gray
-                    )
-                }
-            }
-        }
+        TabToolBar(tabs = list, modifier = Modifier.width(120.dp))
+
+        DateMonthPickerToolBar(yearMonth = YearMonth.now())
+    }
 }
 
 @Preview(showBackground = true)
