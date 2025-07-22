@@ -22,9 +22,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -32,6 +37,9 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,15 +49,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.leng.jingzhekt.ui.components.BillToolbar
 import com.leng.jingzhekt.ui.components.CircularStatisticalCard
 import com.leng.jingzhekt.ui.components.DateMonthPickerToolBar
@@ -59,7 +74,6 @@ import com.leng.jingzhekt.ui.components.MiniCard
 import com.leng.jingzhekt.ui.components.NoBillsPlaceholder
 import com.leng.jingzhekt.ui.components.TabToolBar
 import com.leng.jingzhekt.ui.navigation.AppTopBar
-import com.leng.jingzhekt.ui.navigation.BottomNavBar
 import com.leng.jingzhekt.ui.theme.AppTheme
 import java.time.YearMonth
 
@@ -234,15 +248,11 @@ fun MainTopBar(){
 @Composable
 fun HomeScreen() {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { AppTopBar() },
-        bottomBar = {
-            BottomNavBar()
-        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -269,7 +279,6 @@ fun HomeScreen() {
 @Composable
 fun BillScreen(){
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-
     Box(modifier = Modifier) {
         Scaffold(
             modifier = Modifier
@@ -278,9 +287,6 @@ fun BillScreen(){
             topBar = {
                 AppTopBar()
             },
-            bottomBar = {
-                BottomNavBar()
-            }
         ) { innerPadding ->
             Column(
                 modifier = Modifier
@@ -294,50 +300,27 @@ fun BillScreen(){
                 NoBillsPlaceholder()
             }
         }
-
-        FloatingActionButton(modifier = Modifier
-            .zIndex(2f)
-            .align(Alignment.BottomCenter)
-            .padding(16.dp)
-            .size(72.dp),
-            shape = CircleShape,
-            elevation= FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp
-            ),
-            onClick = { /*TODO*/ }) {
-            Icon(Icons.Filled.Add, contentDescription = "add")
-        }
     }
 }
 
 @Preview
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(){
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-
+    val scrollState = rememberScrollState()
     Box(modifier = Modifier) {
         Scaffold(
             modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState()),
-
-            topBar = {
-                AppTopBar()
-            },
-            bottomBar = {
-                BottomNavBar()
-            }
+                .fillMaxSize(),
+            topBar = { AppTopBar() },
         ) { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color(0xFFF7F7F7))
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -350,8 +333,6 @@ fun StatisticsScreen(){
 
                     TabToolBar(tabs = listOf("支出","收入","结余"),Modifier.width(180.dp))
                     DateMonthPickerToolBar(yearMonth = YearMonth.now())
-
-
                 }
 
                 Row {
@@ -390,18 +371,114 @@ fun StatisticsScreen(){
                     onSelect = { selectedIndex = it })
             }
         }
+    }
+}
 
-        FloatingActionButton(modifier = Modifier
-            .zIndex(2f)
-            .align(Alignment.BottomCenter)
-            .padding(16.dp)
-            .size(72.dp),
-            shape = CircleShape,
-            elevation= FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp
-            ),
-            onClick = { /*TODO*/ }) {
-            Icon(Icons.Filled.Add, contentDescription = "add")
+@Preview
+@Composable
+fun MineScreen(){
+
+}
+
+enum class Destination(
+    val route: String,
+    val label: String,
+    val icon: Any, // 支持 ImageVector 或 Int
+    val contentDescription: String
+) {
+    HOME("home", "首页", Icons.Default.Home, "首页"),
+    BILL("bill", "账单", Icons.AutoMirrored.Filled.List, "账单"),
+    ADD("add", "", "", ""),
+    STATISTIC("statistic", "统计", R.drawable.chart, "统计"), // 用自定义图标
+    Mine("mine", "我的", Icons.Default.Person, "我的")
+}
+
+@Composable
+fun AppNavHost(
+    navController: NavHostController,
+    startDestination: Destination,
+    modifier: Modifier = Modifier
+) {
+    NavHost(
+        navController,
+        startDestination = startDestination.route
+    ) {
+        Destination.entries.forEach { destination ->
+            composable(destination.route) {
+                when (destination) {
+                    Destination.HOME -> HomeScreen()
+                    Destination.BILL -> BillScreen()
+                    Destination.ADD -> {}
+                    Destination.STATISTIC -> StatisticsScreen()
+                    Destination.Mine -> MineScreen()
+                }
+            }
+        }
+    }
+}
+
+
+
+@Preview(showBackground = true)
+@Composable
+fun HomeNavigationBar(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
+    val startDestination = Destination.HOME
+    var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Scaffold 只负责内容和底部栏
+        Scaffold(
+            modifier = modifier,
+            bottomBar = {
+                NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
+                    Destination.entries.forEachIndexed { index, destination ->
+                        val isAdd = destination == Destination.ADD
+                        NavigationBarItem(
+                            selected = !isAdd && selectedDestination == index,
+                            onClick = {
+                                if (!isAdd) {
+                                    navController.navigate(route = destination.route)
+                                    selectedDestination = index
+                                }
+                            },
+                            enabled = !isAdd, // 禁用ADD按钮
+                            icon = {
+                                when (destination.icon) {
+                                    is ImageVector -> Icon(destination.icon as ImageVector, contentDescription = destination.contentDescription)
+                                    is Int -> Icon(painterResource(id = destination.icon as Int), contentDescription = destination.contentDescription)
+                                    else -> {}
+                                }
+                            },
+                            label = { if (destination.label.isNotEmpty()) Text(destination.label) }
+                        )
+                    }
+                }
+            }
+        ) { contentPadding ->
+            AppNavHost(
+                navController,
+                startDestination,
+                modifier = Modifier.padding(contentPadding)
+            )
+        }
+
+        // FAB 绝对定位在底部中间，覆盖在BottomBar上
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            FloatingActionButton(
+                onClick = { /* TODO: 这里写你的点击事件 */ },
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .padding(bottom = 28.dp) // 这里的bottom值可根据BottomBar高度微调
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "添加")
+            }
         }
     }
 }
