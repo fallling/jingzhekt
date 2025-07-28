@@ -1,5 +1,6 @@
 package com.leng.jingzhekt
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -57,6 +58,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -75,6 +77,10 @@ import com.leng.jingzhekt.ui.components.NoBillsPlaceholder
 import com.leng.jingzhekt.ui.components.TabToolBar
 import com.leng.jingzhekt.ui.navigation.AppTopBar
 import com.leng.jingzhekt.ui.theme.AppTheme
+import com.leng.jingzhekt.ui.view.BillScreen
+import com.leng.jingzhekt.ui.view.HomeScreen
+import com.leng.jingzhekt.ui.view.MineScreen
+import com.leng.jingzhekt.ui.view.StatisticsScreen
 import java.time.YearMonth
 
 class MainActivity : ComponentActivity() {
@@ -84,121 +90,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 //HomeScreen()
-                BillScreen()
+                HomeNavigationBar()
             }
-        }
-    }
-}
-
-@Preview
-@Composable
-fun MonthlyExpenditure(){
-    // 本月支出卡片
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .height(120.dp),
-        shape = RoundedCornerShape(20.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFFB2B7F5), Color(0xFFB2E0F5))
-                    )
-                )
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("本月支出", style = MaterialTheme.typography.bodyMedium)
-                    Card(
-                        shape = RoundedCornerShape(50),
-                        modifier = Modifier.height(28.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .background(Color.White)
-                                .padding(horizontal = 12.dp, vertical = 4.dp)
-                        ) {
-                            Text("6月1日-6月30日", style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("￥ 0.00", style = MaterialTheme.typography.headlineLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-                Row {
-                    Text("本月收入 ￥ 0.00", style = MaterialTheme.typography.bodySmall)
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text("日均支出 ￥ 0.00", style = MaterialTheme.typography.bodySmall)
-                }
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-fun TodayBill(){
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .height(220.dp),
-        shape = RoundedCornerShape(20.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("今日账单", style = MaterialTheme.typography.bodyMedium)
-                Row {
-                    Text("收入 0.00", style = MaterialTheme.typography.bodySmall)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("支出 0.00", style = MaterialTheme.typography.bodySmall)
-                }
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-            // 占位图和提示
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // 这里可以放占位图片
-                    Spacer(modifier = Modifier.height(32.dp))
-                    Text("当日没有账单数据", color = Color.LightGray)
-                }
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-fun NetWorthCard() {
-    Card(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .height(80.dp)
-            .width(180.dp),
-        shape = RoundedCornerShape(16.dp),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text("净资产", style = MaterialTheme.typography.bodyMedium)
-            Text("￥ 0.00", style = MaterialTheme.typography.headlineSmall)
         }
     }
 }
@@ -243,143 +136,6 @@ fun MainTopBar(){
     }
 }
 
-@Preview
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HomeScreen() {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = { AppTopBar() },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF7F7F7))
-                .padding(innerPadding)
-        ) {
-            // 本月支出卡片
-            MonthlyExpenditure()
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 今日账单
-            TodayBill()
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 净资产卡片
-            NetWorthCard()
-        }
-    }
-}
-
-@Preview
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BillScreen(){
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    Box(modifier = Modifier) {
-        Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = {
-                AppTopBar()
-            },
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFF7F7F7))
-                    .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                BillToolbar()
-                DetailFlowCard()
-                NoBillsPlaceholder()
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-fun StatisticsScreen(){
-    val scrollState = rememberScrollState()
-    Box(modifier = Modifier) {
-        Scaffold(
-            modifier = Modifier
-                .fillMaxSize(),
-            topBar = { AppTopBar() },
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFF7F7F7))
-                    .padding(innerPadding)
-                    .verticalScroll(scrollState),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    var selectedIndex by remember { mutableIntStateOf(0) }
-
-                    TabToolBar(tabs = listOf("支出","收入","结余"),Modifier.width(180.dp))
-                    DateMonthPickerToolBar(yearMonth = YearMonth.now())
-                }
-
-                Row {
-                    MiniCard(title = "支出金额", data = 116.07f)
-                    MiniCard(title = "日均支出", data = 928.55f)
-                }
-                Row {
-                    MiniCard(title = "本月预算", data = 6300.00f)
-                    MiniCard(title = "剩余预算", data = 5371.45f)
-                }
-
-                val data = listOf(0f, 180f, 120f, 90f, 80f, 75f)
-                val xLabels = listOf("01", "05", "10", "15", "20", "25", "30")
-
-                LineChartCard(
-                    originalData = data,
-                    title = "支出趋势",
-                    date = "2025-05-02",
-                    totalAmount = 1106.41f,
-                    xLabels = xLabels
-                )
-
-                val mdata = listOf(5004.56f, 2809.04f, 496.55f, 200f, 100f)
-                val labels = listOf("住房", "餐饮", "购物", "娱乐", "其他")
-                val colors = listOf(
-                    Color(0xFFB2D7F5), Color(0xFF81D4FA), Color(0xFFB2F5E6), Color(0xFFF5E6B2), Color(0xFFF5B2B2)
-                )
-                var selectedIndex by remember { mutableStateOf(0) }
-
-                CircularStatisticalCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    data = mdata,
-                    labels = labels,
-                    colors = colors,
-                    selectedIndex = selectedIndex,
-                    onSelect = { selectedIndex = it })
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-fun MineScreen(){
-
-}
-
 enum class Destination(
     val route: String,
     val label: String,
@@ -422,6 +178,9 @@ fun AppNavHost(
 @Preview(showBackground = true)
 @Composable
 fun HomeNavigationBar(modifier: Modifier = Modifier) {
+
+    val context = LocalContext.current
+
     val navController = rememberNavController()
     val startDestination = Destination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
@@ -470,12 +229,18 @@ fun HomeNavigationBar(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.BottomCenter
         ) {
             FloatingActionButton(
-                onClick = { /* TODO: 这里写你的点击事件 */ },
+                onClick = {
+                    val intent = Intent()
+                    intent.setClass(context,AddBillActivity::class.java)
+                    context.startActivity(intent)
+                },
                 shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primary,
+                containerColor = Color.Black,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
-                    .padding(bottom = 28.dp) // 这里的bottom值可根据BottomBar高度微调
+                    .padding(bottom = 40.dp)
+                    .height(78.dp)
+                    .width(78.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "添加")
             }
