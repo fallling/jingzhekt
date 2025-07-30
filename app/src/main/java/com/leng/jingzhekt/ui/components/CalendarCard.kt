@@ -34,15 +34,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.leng.jingzhekt.R
+import com.leng.jingzhekt.empty.Bill
+import com.leng.jingzhekt.empty.BillType
+import com.leng.jingzhekt.empty.Classify
+import com.leng.jingzhekt.empty.DailyBill
+import com.leng.jingzhekt.empty.Level
+import com.leng.jingzhekt.empty.MonthlyBill
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
+import java.util.Date
 
 @Composable
 fun CalendarCard(
     modifier: Modifier = Modifier,
     yearMonth: YearMonth = YearMonth.now(),
     selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit
+    onDateSelected: (LocalDate) -> Unit,
+    monthlyBill: MonthlyBill
 ) {
     val dates = remember(yearMonth) {
         generateCalendarDates(yearMonth)
@@ -83,8 +93,11 @@ fun CalendarCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(dates) { date ->
+
+
                     DayCell(
                         date = date,
+                        text = ,
                         isCurrentMonth = date.month == yearMonth.month,
                         isSelected = date == selectedDate,
                         onClick = { onDateSelected(it) }
@@ -113,6 +126,7 @@ private fun generateCalendarDates(yearMonth: YearMonth): List<LocalDate> {
 @Composable
 private fun DayCell(
     date: LocalDate,
+    text: String,
     isCurrentMonth: Boolean,
     isSelected: Boolean,
     onClick: (LocalDate) -> Unit
@@ -128,26 +142,39 @@ private fun DayCell(
         date.dayOfMonth.toString()
     }
 
-    val textColor = when {
+    val dateTextColor = when {
         isSelected -> Color.White
         isCurrentMonth -> Color.Black
+        else -> Color.Gray.copy(alpha = 0.5f)
+    }
+
+    val textColor = when{
+        isSelected -> Color.Black
         else -> Color.Gray.copy(alpha = 0.5f)
     }
 
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(50))
+            .clip(RoundedCornerShape(25))
             .background(if (isSelected) Color(0xFF81D4FA) else Color.Transparent)
             .clickable { onClick(date) },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = displayText,
-            color = textColor,
+            color = dateTextColor,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             fontSize = 14.sp
         )
+        if (text != null){
+            Text(
+                text = text,
+                color = textColor,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                fontSize = 14.sp
+            )
+        }
     }
 }
 
@@ -155,10 +182,25 @@ private fun DayCell(
 @Composable
 fun CalendarCardPreview() {
     var selectedDate by remember { mutableStateOf(LocalDate.of(2025, 6, 23)) }
+
+    val classify1 = Classify.create("餐饮", R.drawable.add , Level.Major)
+    val classify2 = Classify.create("零食", R.drawable.add , Level.Major)
+    val classify3 = Classify.create("日用", R.drawable.add , Level.Major)
+
+    val bill1 = Bill.create(classify1, BillType.EXPEND, LocalDateTime.now(), 150.0f,"购物测试1")
+    val bill2 = Bill.create(classify2, BillType.EXPEND, LocalDateTime.now(), 150.0f,"购物测试1")
+    val bill3 = Bill.create(classify3, BillType.EXPEND, LocalDateTime.now(), 150.0f,"购物测试1")
+
+    val dailyBill1 = DailyBill(LocalDate.now(),listOf(bill1,bill2), 125.0f, 160.0f)
+    val dailyBill2 = DailyBill(LocalDate.now(),listOf(bill1,bill2), 454.0f, 45.0f)
+
+    val monthlyBill = MonthlyBill(YearMonth.now(),1235.0f, 120.0f, listOf(dailyBill1,dailyBill2))
+
     CalendarCard(
         yearMonth = YearMonth.of(2025, 6),
         selectedDate = selectedDate,
-        onDateSelected = { selectedDate = it }
+        onDateSelected = { selectedDate = it },
+        billList = monthlyBill
     )
 }
 

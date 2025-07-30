@@ -5,5 +5,6 @@ import java.time.YearMonth
 data class MonthlyBill(
     val month: YearMonth,
     val expend: Float,
-    val income: Float
+    val income: Float,
+    val dailyBill: List<DailyBill>
 )
