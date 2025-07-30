@@ -1,7 +1,5 @@
 package com.leng.jingzhekt.ui.view
 
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -39,13 +36,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leng.jingzhekt.R
-import com.leng.jingzhekt.empty.Bill
-import com.leng.jingzhekt.empty.BillType
-import com.leng.jingzhekt.empty.Classify
-import com.leng.jingzhekt.empty.Level
-import com.leng.jingzhekt.empty.MonthlyBill
+import com.leng.jingzhekt.Entity.Bill
+import com.leng.jingzhekt.Entity.BillType
+import com.leng.jingzhekt.Entity.Classify
+import com.leng.jingzhekt.Entity.DailyBill
+import com.leng.jingzhekt.Entity.Level
+import com.leng.jingzhekt.Entity.MonthlyBill
 import com.leng.jingzhekt.ui.navigation.AppTopBar
 import java.text.DecimalFormat
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -85,7 +84,19 @@ fun HomeScreen() {
 @Preview
 @Composable
 fun MonthlyBillCardPreview(){
-    val monthlyBill = MonthlyBill(YearMonth.now(),20.02f, 100.01f)
+
+    val classify1 = Classify.create("餐饮", R.drawable.add , Level.Major)
+    val classify2 = Classify.create("零食", R.drawable.add , Level.Major)
+    val classify3 = Classify.create("日用", R.drawable.add , Level.Major)
+
+    val bill1 = Bill.create(classify1,BillType.EXPEND, LocalDateTime.now(),20.0f,"购物测试1")
+    val bill2 = Bill.create(classify2,BillType.EXPEND, LocalDateTime.now(),18.0f,"零食测试1")
+    val bill3 = Bill.create(classify3,BillType.EXPEND, LocalDateTime.now(),19.0f,"日用测试1")
+
+    val dailyBill1 = DailyBill(LocalDate.now(), listOf(bill1,bill2), 20.9f, 21.0f)
+    val dailyBill2 = DailyBill(LocalDate.now(), listOf(bill1,bill2), 20.9f, 21.0f)
+
+    val monthlyBill = MonthlyBill(YearMonth.now(),20.02f, 100.01f, listOf(dailyBill1,dailyBill2) )
     MonthlyBillCard(monthlyBill)
 }
 

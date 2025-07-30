@@ -1,6 +1,5 @@
-package com.leng.jingzhekt.empty
+package com.leng.jingzhekt.Entity
 
-import android.graphics.drawable.Icon
 import java.util.concurrent.atomic.AtomicInteger
 
 enum class Level {
