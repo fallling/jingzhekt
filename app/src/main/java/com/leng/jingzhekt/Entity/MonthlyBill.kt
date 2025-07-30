@@ -1,4 +1,4 @@
-package com.leng.jingzhekt.empty
+package com.leng.jingzhekt.Entity
 
 import java.time.YearMonth
 
@@ -6,5 +6,5 @@ data class MonthlyBill(
     val month: YearMonth,
     val expend: Float,
     val income: Float,
-    val dailyBill: List<DailyBill>
+    val dailyBillList:List<DailyBill>
 )
