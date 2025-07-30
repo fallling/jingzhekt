@@ -34,8 +34,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.leng.jingzhekt.R
 import com.leng.jingzhekt.empty.Bill
 import com.leng.jingzhekt.empty.BillType
@@ -160,7 +162,7 @@ fun DailyBillCardPreview() {
 }
 
 @Composable
-fun DailyBillCard(dataList: List<Bill>){
+fun DailyBillCard(dailyBill: Daily){
 
     Card(
         modifier = Modifier
@@ -178,12 +180,12 @@ fun DailyBillCard(dataList: List<Bill>){
             ) {
                 Text("今日账单", style = MaterialTheme.typography.bodyMedium)
                 Row {
-                    Text("收入 0.00", style = MaterialTheme.typography.bodySmall)
+                    Text("收入 ", style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("支出 0.00", style = MaterialTheme.typography.bodySmall)
                 }
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     if (dataList.isEmpty()) {
@@ -192,14 +194,31 @@ fun DailyBillCard(dataList: List<Bill>){
                         Text("当日没有账单数据", color = Color.LightGray)
                     }
 
-                    dataList.forEachIndexed { indext, item ->
-                        Row {
+                    dataList.forEachIndexed { index, item ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                    .height(38.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
                             Icon(
                                 painterResource(item.classify.iconResId),
                                 contentDescription = "统计",
-                                modifier = Modifier.size(22.dp)
+                                modifier = Modifier.size(28.dp)
                             )
-                            Text(item.classify.name)
+                            Column(modifier = Modifier.padding(start = 16.dp)) {
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    Text(text = item.classify.name)
+                                    Row(modifier = Modifier.align(Alignment.CenterEnd)) {
+
+                                    }
+                                    Text(
+                                        text = "￥" + item.amount,
+                                        modifier = Modifier.align(Alignment.CenterEnd)
+                                    )
+                                }
+
+                                Text(item.remarks, fontSize = 10.sp, color = Color.Gray)
+                            }
                         }
 
                     }
