@@ -12,9 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.leng.jingzhekt.R
 
-@Preview
 @Composable
-fun MineScreen(){
+fun MineScreen(modifier: Modifier){
 
 }
 

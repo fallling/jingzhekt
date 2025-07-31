@@ -31,16 +31,13 @@ import com.leng.jingzhekt.ui.components.MiniCard
 import com.leng.jingzhekt.ui.components.TabToolBar
 import com.leng.jingzhekt.ui.navigation.AppTopBar
 import java.time.YearMonth
-
-@Preview
 @Composable
-fun StatisticsScreen(){
+fun StatisticsScreen(modifier: Modifier){
     val scrollState = rememberScrollState()
-    Box(modifier = Modifier) {
+    Box {
         Scaffold(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize(),
-            topBar = { AppTopBar() },
         ) { innerPadding ->
             Column(
                 modifier = Modifier
@@ -61,7 +58,7 @@ fun StatisticsScreen(){
                     var selectedIndex by remember { mutableIntStateOf(0) }
 
                     TabToolBar(tabs = listOf("支出","收入","结余"), Modifier.width(180.dp))
-                    DateMonthPickerToolBar(yearMonth = YearMonth.now())
+                    DateMonthPickerToolBar(yearMonth = YearMonth.now(), onDateClick = {}, onRightClick = {}, onLeftClick = {})
                 }
 
                 Row {

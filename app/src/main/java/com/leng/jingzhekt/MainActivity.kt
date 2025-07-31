@@ -77,7 +77,7 @@ import com.leng.jingzhekt.ui.components.NoBillsPlaceholder
 import com.leng.jingzhekt.ui.components.TabToolBar
 import com.leng.jingzhekt.ui.navigation.AppTopBar
 import com.leng.jingzhekt.ui.theme.AppTheme
-import com.leng.jingzhekt.ui.view.BillScreen
+import com.leng.jingzhekt.ui.view.BillScreenView
 import com.leng.jingzhekt.ui.view.HomeScreen
 import com.leng.jingzhekt.ui.view.MineScreen
 import com.leng.jingzhekt.ui.view.StatisticsScreen
@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview(device = "id:pixel_8_pro")
+/*@Preview(device = "id:pixel_8_pro")
 @Composable
 fun MainTopBar(){
     Box(
@@ -106,7 +106,7 @@ fun MainTopBar(){
     ) {
         // 搜索按钮（靠右）
         IconButton(
-            onClick = { /* 搜索 */ },
+            onClick = { *//* 搜索 *//* },
             modifier = Modifier.align(Alignment.CenterEnd)
         ) {
             Icon(
@@ -127,14 +127,14 @@ fun MainTopBar(){
                 style = MaterialTheme.typography.titleLarge
             )
             IconButton(
-                onClick = { /* 刷新 */ },
+                onClick = { *//* 刷新 *//* },
                 modifier = Modifier.padding()
             ) {
                 Icon(Icons.Filled.Refresh, contentDescription = "刷新", modifier = Modifier.size(20.dp))
             }
         }
     }
-}
+}*/
 
 enum class Destination(
     val route: String,
@@ -162,25 +162,22 @@ fun AppNavHost(
         Destination.entries.forEach { destination ->
             composable(destination.route) {
                 when (destination) {
-                    Destination.HOME -> HomeScreen()
-                    Destination.BILL -> BillScreen()
+                    Destination.HOME -> HomeScreen(modifier)
+                    Destination.BILL -> BillScreenView(modifier)
                     Destination.ADD -> {}
-                    Destination.STATISTIC -> StatisticsScreen()
-                    Destination.Mine -> MineScreen()
+                    Destination.STATISTIC -> StatisticsScreen(modifier)
+                    Destination.Mine -> MineScreen(modifier)
                 }
             }
         }
     }
 }
 
-
-
 @Preview(showBackground = true)
 @Composable
 fun HomeNavigationBar(modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
-
     val navController = rememberNavController()
     val startDestination = Destination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
@@ -189,6 +186,9 @@ fun HomeNavigationBar(modifier: Modifier = Modifier) {
         // Scaffold 只负责内容和底部栏
         Scaffold(
             modifier = modifier,
+            topBar = {
+                AppTopBar()
+            },
             bottomBar = {
                 NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
                     Destination.entries.forEachIndexed { index, destination ->

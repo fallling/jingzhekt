@@ -16,8 +16,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,34 +34,24 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.leng.jingzhekt.R
-import com.leng.jingzhekt.Entity.Bill
-import com.leng.jingzhekt.Entity.BillType
-import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.DailyBill
-import com.leng.jingzhekt.Entity.Level
 import com.leng.jingzhekt.Entity.MonthlyBill
-import com.leng.jingzhekt.ui.navigation.AppTopBar
+import com.leng.jingzhekt.TestData
+import com.leng.jingzhekt.ui.components.CircularIcon
 import java.text.DecimalFormat
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(modifier: Modifier) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     Scaffold(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = { AppTopBar() },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -72,7 +65,7 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             // 今日账单
-            MonthlyBillCardPreview()
+            DailyBillCardPreview()
             Spacer(modifier = Modifier.height(16.dp))
 
             // 净资产卡片
@@ -83,31 +76,18 @@ fun HomeScreen() {
 
 @Preview
 @Composable
-fun MonthlyBillCardPreview(){
-
-    val classify1 = Classify.create("餐饮", R.drawable.add , Level.Major)
-    val classify2 = Classify.create("零食", R.drawable.add , Level.Major)
-    val classify3 = Classify.create("日用", R.drawable.add , Level.Major)
-
-    val bill1 = Bill.create(classify1,BillType.EXPEND, LocalDateTime.now(),20.0f,"购物测试1")
-    val bill2 = Bill.create(classify2,BillType.EXPEND, LocalDateTime.now(),18.0f,"零食测试1")
-    val bill3 = Bill.create(classify3,BillType.EXPEND, LocalDateTime.now(),19.0f,"日用测试1")
-
-    val dailyBill1 = DailyBill(LocalDate.now(), listOf(bill1,bill2), 20.9f, 21.0f)
-    val dailyBill2 = DailyBill(LocalDate.now(), listOf(bill1,bill2), 20.9f, 21.0f)
-
-    val monthlyBill = MonthlyBill(YearMonth.now(),20.02f, 100.01f, listOf(dailyBill1,dailyBill2) )
-    MonthlyBillCard(monthlyBill)
+fun MonthlyBillCardPreview() {
+    MonthlyBillCard(TestData.getTestDataMonthlyBill())
 }
 
 @Composable
-fun MonthlyBillCard(monthlyBill: MonthlyBill){
+fun MonthlyBillCard(monthlyBill: MonthlyBill) {
     val formatter = DateTimeFormatter.ofPattern("MM月")
     val month = monthlyBill.month.format(formatter)
     val monthString = month + "1日-" + month + monthlyBill.month.lengthOfMonth() + "日"
 
     val decimalFormat = DecimalFormat("#.##")
-    val dailySpending =decimalFormat.format(monthlyBill.expend/monthlyBill.month.lengthOfMonth())
+    val dailySpending = decimalFormat.format(monthlyBill.expend / monthlyBill.month.lengthOfMonth())
     // 本月支出卡片
     Card(
         modifier = Modifier
@@ -148,7 +128,7 @@ fun MonthlyBillCard(monthlyBill: MonthlyBill){
                 Text("￥ ${monthlyBill.expend}", style = MaterialTheme.typography.headlineLarge)
             }
 
-            Row (modifier = Modifier.align(Alignment.BottomStart)){
+            Row(modifier = Modifier.align(Alignment.BottomStart)) {
                 Text("本月收入 ￥ ${monthlyBill.income}", style = MaterialTheme.typography.bodySmall)
                 Spacer(modifier = Modifier.width(16.dp))
                 Text("日均支出 ￥ $dailySpending", style = MaterialTheme.typography.bodySmall)
@@ -161,25 +141,19 @@ fun MonthlyBillCard(monthlyBill: MonthlyBill){
 @Preview
 @Composable
 fun DailyBillCardPreview() {
-    val classify1 = Classify.create("餐饮", R.drawable.add , Level.Major)
-    val classify2 = Classify.create("零食", R.drawable.add , Level.Major)
-    val classify3 = Classify.create("日用", R.drawable.add , Level.Major)
-
-    val bill1 = Bill.create(classify1,BillType.EXPEND, LocalDateTime.now(),20.0f,"购物测试1")
-    val bill2 = Bill.create(classify2,BillType.EXPEND, LocalDateTime.now(),18.0f,"零食测试1")
-    val bill3 = Bill.create(classify3,BillType.EXPEND, LocalDateTime.now(),19.0f,"日用测试1")
-
-    DailyBillCard(listOf(bill1,bill2,bill3))
+    DailyBillCard(TestData.getTestDataDailyBill())
 }
 
 @Composable
-fun DailyBillCard(dailyBill: Daily){
+fun DailyBillCard(
+    dailyBill: DailyBill? = null
 
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .height(220.dp),
+            .height(360.dp),
         shape = RoundedCornerShape(20.dp)
     ) {
         Column(
@@ -189,49 +163,75 @@ fun DailyBillCard(dailyBill: Daily){
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("今日账单", style = MaterialTheme.typography.bodyMedium)
+                Text("今日账单")
                 Row {
-                    Text("收入 ", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "收 ${dailyBill?.income ?: "0.00"}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("支出 0.00", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "支 ${dailyBill?.expand ?: "0.00"}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
+
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = 1.dp
+            )
+            //Spacer(modifier = Modifier.height(16.dp))
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (dataList.isEmpty()) {
+                    if (dailyBill == null || dailyBill.billList.isEmpty()) {
                         // 占位图和提示
+                        Icon(
+                            imageVector = Icons.Filled.ShoppingCart,
+                            contentDescription = "No data",
+                            modifier = Modifier.size(72.dp),
+                            tint = Color.LightGray
+                        )
                         Spacer(modifier = Modifier.height(32.dp))
                         Text("当日没有账单数据", color = Color.LightGray)
-                    }
 
-                    dataList.forEachIndexed { index, item ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                                    .height(38.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Icon(
-                                painterResource(item.classify.iconResId),
-                                contentDescription = "统计",
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Column(modifier = Modifier.padding(start = 16.dp)) {
-                                Box(modifier = Modifier.fillMaxWidth()) {
-                                    Text(text = item.classify.name)
-                                    Row(modifier = Modifier.align(Alignment.CenterEnd)) {
-
-                                    }
-                                    Text(
-                                        text = "￥" + item.amount,
-                                        modifier = Modifier.align(Alignment.CenterEnd)
+                    } else {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            dailyBill.billList.forEachIndexed { index, item ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    CircularIcon(
+                                        painterResource(item.classify.iconResId),
+                                        backGroundColor = Color(0xffe9f2ff),
+                                        iconSize = 24.dp,
+                                        size = 36.dp
                                     )
-                                }
 
-                                Text(item.remarks, fontSize = 10.sp, color = Color.Gray)
+                                    Column(modifier = Modifier.padding(start = 16.dp)) {
+                                        Box(modifier = Modifier.fillMaxWidth()) {
+                                            Text(text = item.classify.name)
+                                            Row(modifier = Modifier.align(Alignment.CenterEnd)) {
+
+                                            }
+                                            Text(
+                                                text = "￥" + item.amount,
+                                                modifier = Modifier.align(Alignment.CenterEnd)
+                                            )
+                                        }
+                                        Text(
+                                            item.remarks,
+                                            modifier = Modifier.padding(start = 2.dp),
+                                            fontSize = 10.sp,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                }
                             }
                         }
-
                     }
                 }
             }

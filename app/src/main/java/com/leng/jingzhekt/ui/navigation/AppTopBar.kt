@@ -64,39 +64,3 @@ fun AppTopBar(){
         }
     }
 }
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
-@Composable
-fun CenterAlignedTopAppBarExample() {
-    CenterAlignedTopAppBar(
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.primary,
-        ),
-        title = {
-            Text(
-                "Centered Top App Bar",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        navigationIcon = {
-            IconButton(onClick = { /* do something */ }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Localized description"
-                )
-            }
-        },
-        actions = {
-            IconButton(onClick = { /* do something */ }) {
-                Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = "Localized description"
-                )
-            }
-        },
-    )
-}

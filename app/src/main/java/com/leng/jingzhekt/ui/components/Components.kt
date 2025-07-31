@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -25,9 +26,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leng.jingzhekt.R
@@ -77,3 +81,32 @@ fun MiniCardPreview() {
         MiniCard(title = "支出金额", data = 928.55f, R.drawable.chart)
     }
 }
+
+@Composable
+fun CircularIcon(
+    painter: Painter,
+    backGroundColor: Color = Color(0xffececec),
+    iconColor: Color = Color.Black,
+    size: Dp = 36.dp,
+    iconSize:Dp = 24.dp
+) {
+    Box(
+        modifier = Modifier.size(size).background(backGroundColor, shape = CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painter,
+            contentDescription = null,
+            tint = iconColor,
+            modifier = Modifier.size(iconSize)
+        )
+    }
+}
+
+
+@Preview
+@Composable
+fun CircularIconPreview() {
+    CircularIcon(painterResource(R.drawable.theaters_24px))
+}
+

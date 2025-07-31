@@ -95,12 +95,26 @@ fun TabToolBarPreview(){
 @Composable
 fun DateMonthPickerToolBarPreview(){
     val yearMonth = YearMonth.now()
-    DateMonthPickerToolBar(yearMonth = yearMonth)
+    DateMonthPickerToolBar(
+        yearMonth = yearMonth,
+        onLeftClick = {
+
+        },
+        onDateClick = {
+
+        },
+        onRightClick = {
+
+        },
+    )
 }
 
 @Composable
 fun DateMonthPickerToolBar(
-    yearMonth : YearMonth
+    yearMonth : YearMonth,
+    onLeftClick: () -> Unit,
+    onDateClick: () -> Unit,
+    onRightClick: () -> Unit
 ){
     Row(
         modifier = Modifier
@@ -134,7 +148,9 @@ fun DateMonthPickerToolBar(
             modifier = Modifier
                 .clip(CircleShape)
                 .background(Color.White)
-                .clickable { /* Next month */ }
+                .clickable{
+                    onRightClick
+                }
         ) {
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,

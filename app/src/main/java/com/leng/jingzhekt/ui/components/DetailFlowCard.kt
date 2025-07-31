@@ -49,6 +49,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Wallpapers
 import java.time.YearMonth
 
@@ -59,7 +60,7 @@ fun DetailFlowCard(){
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .height(120.dp),
+            .height(140.dp),
         shape = RoundedCornerShape(20.dp)
     ) {
         Box(
@@ -133,7 +134,7 @@ fun BillToolbar() {
 
         TabToolBar(tabs = list, modifier = Modifier.width(120.dp))
 
-        DateMonthPickerToolBar(yearMonth = YearMonth.now())
+        DateMonthPickerToolBar(yearMonth = YearMonth.now(), onLeftClick = {}, onDateClick = {}, onRightClick = {})
     }
 }
 
@@ -142,7 +143,7 @@ fun BillToolbar() {
 fun NoBillsPlaceholder() {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(vertical = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -162,12 +163,12 @@ fun NoBillsPlaceholder() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, device = Devices.PIXEL_7_PRO)
 @Composable
 fun TodayBillCard() {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

@@ -56,9 +56,9 @@ fun CalendarCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(16.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        //colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -176,7 +176,9 @@ fun CalendarCardPreview() {
     CalendarCard(
         yearMonth = YearMonth.of(2025, selectedDate.month),
         selectedDate = selectedDate,
-        onDateSelected = { selectedDate = it },
+        onDateSelected = { date ->
+            selectedDate = date
+        },
         monthlyBill = TestData.getTestDataMonthlyBill()
     )
 }
@@ -198,9 +200,9 @@ fun MonthPicker(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(),
+            .padding(16.dp),
         shape = RoundedCornerShape(20.dp, 20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        //colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
