@@ -82,6 +82,63 @@ fun TabToolBar(
     )
 }
 
+@Composable
+fun DateMonthPickerToolBar(
+    yearMonth : YearMonth,
+    onLeftClick: () -> Unit,
+    onDateClick: () -> Unit,
+    onRightClick: () -> Unit
+){
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(Color(0xFFE3F2FD))
+            .padding(2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(Color.White)
+                .clickable { onLeftClick() }
+        ) {
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = "Previous month",
+                tint = Color.Gray
+            )
+        }
+
+        Box(modifier = Modifier.clickable{onDateClick()}) {
+            Text(
+                text = yearMonth.format(DateTimeFormatter.ofPattern("yyyy年M月", Locale.CHINA)),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        }
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(Color.White)
+                .clickable{
+                    onRightClick()
+                }
+        ) {
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "Next month",
+                tint = Color.Gray
+            )
+        }
+    }
+}
+
+
 @Preview
 @Composable
 fun TabToolBarPreview(){
@@ -107,56 +164,4 @@ fun DateMonthPickerToolBarPreview(){
 
         },
     )
-}
-
-@Composable
-fun DateMonthPickerToolBar(
-    yearMonth : YearMonth,
-    onLeftClick: () -> Unit,
-    onDateClick: () -> Unit,
-    onRightClick: () -> Unit
-){
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(Color(0xFFE3F2FD))
-            .padding(2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(Color.White)
-                .clickable { /* Previous month */ }
-        ) {
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "Previous month",
-                tint = Color.Gray
-            )
-        }
-        Text(
-            text =  yearMonth.format(DateTimeFormatter.ofPattern("yyyy年M月", Locale.CHINA)),
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(Color.White)
-                .clickable{
-                    onRightClick
-                }
-        ) {
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Next month",
-                tint = Color.Gray
-            )
-        }
-    }
 }

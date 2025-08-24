@@ -1,5 +1,6 @@
 package com.leng.jingzhekt.ui.components;
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +17,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,18 +37,20 @@ import androidx.compose.ui.unit.sp
 import com.leng.jingzhekt.Entity.MonthlyBill
 import com.leng.jingzhekt.TestData
 import java.time.LocalDate
+import java.time.Year
 import java.time.YearMonth
+import kotlin.math.log
 
 @Composable
 fun CalendarCard(
     modifier: Modifier = Modifier,
-    yearMonth: YearMonth = YearMonth.now(),
+    currentMonth: YearMonth = YearMonth.now(),
     selectedDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
     monthlyBill: MonthlyBill
 ) {
-    val dates = remember(yearMonth) {
-        generateCalendarDates(yearMonth)
+    var dates = remember(currentMonth) {
+        generateCalendarDates(currentMonth)
     }
 
     val weekDays = listOf("一", "二", "三", "四", "五", "六", "日")
@@ -90,9 +92,11 @@ fun CalendarCard(
                         date = date,
                         text = if (date.dayOfMonth < monthlyBill.dailyBillList.size)
                             "-" + monthlyBill.dailyBillList[date.dayOfMonth-1].dailyAmount else "",
-                        isCurrentMonth = date.month == yearMonth.month,
+                        isCurrentMonth = date.month == currentMonth.month,
                         isSelected = date == selectedDate,
-                        onClick = { onDateSelected(it) }
+                        onClick = {
+                            onDateSelected(it)
+                        }
                     )
                 }
             }
@@ -150,7 +154,10 @@ private fun DayCell(
             .aspectRatio(1f)
             .clip(RoundedCornerShape(25))
             .background(if (isSelected) Color(0xFF81D4FA) else Color.Transparent)
-            .clickable { onClick(date) },
+            .clickable {
+                onClick(date)
+                Log.d("lengzq", " seleted Date $date")
+           },
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -174,87 +181,13 @@ private fun DayCell(
 fun CalendarCardPreview() {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     CalendarCard(
-        yearMonth = YearMonth.of(2025, selectedDate.month),
+        currentMonth = YearMonth.of(2025, selectedDate.month),
         selectedDate = selectedDate,
         onDateSelected = { date ->
             selectedDate = date
         },
         monthlyBill = TestData.getTestDataMonthlyBill()
     )
-}
-
-
-@Composable
-fun MonthPicker(
-    modifier: Modifier = Modifier,
-    currentYear: Int = 2025,
-    selectedMonth: Int = 6,
-    onYearChanged: (Int) -> Unit = {},
-    onMonthSelected: (Int) -> Unit = {}
-) {
-    val monthNames = mapOf(
-        1 to "1月", 2 to "2月", 3 to "3月", 4 to "4月", 5 to "5月", 6 to "6月",
-        7 to "7月", 8 to "8月", 9 to "9月", 10 to "10月", 11 to "11月", 12 to "12月"
-    )
-    
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(20.dp, 20.dp),
-        //colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // 年份选择行
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "<",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onYearChanged(currentYear - 1) }
-                )
-                
-                Text(
-                    text = currentYear.toString(),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                
-                Text(
-                    text = ">",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onYearChanged(currentYear + 1) }
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // 月份网格
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(12) { index ->
-                    val month = index + 1
-                    MonthCell(
-                        month = month,
-                        monthName = monthNames[month] ?: "",
-                        isSelected = month == selectedMonth,
-                        onClick = { onMonthSelected(month) }
-                    )
-                }
-            }
-        }
-    }
 }
 
 @Composable
@@ -281,6 +214,79 @@ private fun MonthCell(
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = textColor
         )
+    }
+}
+
+@Composable
+fun MonthPicker(
+    modifier: Modifier = Modifier,
+    currentYear: Int = 2025,
+    selectedMonth: Int = 6,
+    onYearChanged: (Int) -> Unit = {},
+    onMonthSelected: (Int) -> Unit = {}
+) {
+    val monthNames = mapOf(
+        1 to "1月", 2 to "2月", 3 to "3月", 4 to "4月", 5 to "5月", 6 to "6月",
+        7 to "7月", 8 to "8月", 9 to "9月", 10 to "10月", 11 to "11月", 12 to "12月"
+    )
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(20.dp, 20.dp),
+        //colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // 年份选择行
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "<",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onYearChanged(currentYear - 1) }
+                )
+
+                Text(
+                    text = currentYear.toString(),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = ">",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onYearChanged(currentYear + 1) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 月份网格
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(12) { index ->
+                    val month = index + 1
+                    MonthCell(
+                        month = month,
+                        monthName = monthNames[month] ?: "",
+                        isSelected = month == selectedMonth,
+                        onClick = { onMonthSelected(month) }
+                    )
+                }
+            }
+        }
     }
 }
 

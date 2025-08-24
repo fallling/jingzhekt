@@ -1,6 +1,7 @@
 package com.leng.jingzhekt.ui.view
 
-import android.app.Dialog
+import android.util.Log
+import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,17 +52,20 @@ import com.leng.jingzhekt.ui.components.CalendarCard
 import com.leng.jingzhekt.ui.components.CircularIcon
 import com.leng.jingzhekt.ui.components.DateMonthPickerToolBar
 import com.leng.jingzhekt.ui.components.DetailFlowCard
+import com.leng.jingzhekt.ui.components.MonthPicker
 import com.leng.jingzhekt.ui.components.NoBillsPlaceholder
 import java.time.LocalDate
 import java.time.YearMonth
+import kotlin.reflect.KClass
 
 @Preview
 @Composable
 fun BillScreenView(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val startDestination = BillScreenDestination.CALENDAR
-    var selectedIndex by remember { mutableIntStateOf(startDestination.ordinal) }
-    var currentMonth = YearMonth.now()
+    var tabSelectedIndex by remember { mutableIntStateOf(startDestination.ordinal) }
+
+    var selectedMonth by remember { mutableStateOf(YearMonth.now()) }
     
     Scaffold(
         modifier = modifier,
@@ -75,14 +79,14 @@ fun BillScreenView(modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically
             ){
                 TabRow(
-                    selectedTabIndex = selectedIndex,
+                    selectedTabIndex = tabSelectedIndex,
                     modifier = Modifier.width(120.dp)
                         .clip(RoundedCornerShape(50)),
                     containerColor = Color(0xFFE3F2FD),
                     indicator = { tabPositions ->
                         TabRowDefaults.SecondaryIndicator(
                             Modifier
-                                .tabIndicatorOffset(tabPositions[selectedIndex])
+                                .tabIndicatorOffset(tabPositions[tabSelectedIndex])
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(50)),
                             color = Color(0xFF81D4FA)
@@ -95,46 +99,95 @@ fun BillScreenView(modifier: Modifier = Modifier) {
                                 modifier = Modifier
                                     .zIndex(2f)
                                     .height(24.dp),
-                                selected = selectedIndex == index,
+                                selected = tabSelectedIndex == index,
                                 onClick = {
                                     navController.navigate(route = destination.route)
-                                    selectedIndex = index
+                                    tabSelectedIndex = index
                                 },
                                 text = {
                                     Text(
                                         destination.label,
-                                        color = if (selectedIndex == index) Color.Black else Color.Gray,
-                                        fontWeight = if (selectedIndex == index) FontWeight.Bold else FontWeight.Normal
+                                        color = if (tabSelectedIndex == index) Color.Black else Color.Gray,
+                                        fontWeight = if (tabSelectedIndex == index) FontWeight.Bold else FontWeight.Normal
                                     )
                                 }
                             )
                         }
                     }
                 )
+                TabToolBar(onTabClick = { index ->
+                    navController.navigate(route = destination.route)
+                    tabSelectedIndex = index
+                })
                 DateMonthPickerToolBar(
-                    yearMonth = YearMonth.now(),
+                    yearMonth = selectedMonth,
                     onLeftClick = {
-                        currentMonth = currentMonth.minusMonths(1)
+                        selectedMonth = selectedMonth.minusMonths(1)
                     },
                     onDateClick = {
 
                     },
                     onRightClick = {
-                        currentMonth = currentMonth.plusMonths(1)
+                        selectedMonth = selectedMonth.plusMonths(1)
                     },
                 )
             }
         }
     ) { innerPadding ->
-        BillNavHost(navController, startDestination, Modifier.padding(innerPadding))
+        BillNavHost(navController, startDestination, Modifier.padding(innerPadding), selectedMonth)
     }
 }
+
+@Composable
+fun TabToolBar(onTabClick: (index:Int, ) -> Unit){
+    var tabSelectedIndex by remember { mutableIntStateOf(BillScreenDestination.CALENDAR.ordinal) }
+    TabRow(
+        selectedTabIndex = tabSelectedIndex,
+        modifier = Modifier.width(120.dp)
+            .clip(RoundedCornerShape(50)),
+        containerColor = Color(0xFFE3F2FD),
+        indicator = { tabPositions ->
+            TabRowDefaults.SecondaryIndicator(
+                Modifier
+                    .tabIndicatorOffset(tabPositions[tabSelectedIndex])
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(50)),
+                color = Color(0xFF81D4FA)
+            )
+        },
+        divider = {},
+        tabs = {
+            BillScreenDestination.entries.forEachIndexed { index, destination ->
+                Tab(
+                    modifier = Modifier
+                        .zIndex(2f)
+                        .height(24.dp),
+                    selected = tabSelectedIndex == index,
+                    onClick = {
+                        navController.navigate(route = destination.route)
+                        tabSelectedIndex = index
+                        onTabClick(index, destination)
+                    },
+                    text = {
+                        Text(
+                            destination.label,
+                            color = if (tabSelectedIndex == index) Color.Black else Color.Gray,
+                            fontWeight = if (tabSelectedIndex == index) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                )
+            }
+        }
+    )
+}
+
 
 @Composable
 fun BillNavHost(
     navController: NavHostController,
     startDestination: BillScreenDestination,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedMonth: YearMonth
 ) {
     NavHost(
         navController = navController,
@@ -144,7 +197,7 @@ fun BillNavHost(
             composable(destination.route) {
                 when (destination) {
                     BillScreenDestination.STATEMENT -> StatementView(modifier)
-                    BillScreenDestination.CALENDAR -> CalendarViewDetail(modifier)
+                    BillScreenDestination.CALENDAR -> CalendarViewDetail(modifier, selectedMonth)
                 }
             }
         }
@@ -168,16 +221,28 @@ fun StatementView(modifier: Modifier) {
     }
 }
 
-@Preview
 @Composable
-fun CalendarViewDetail(modifier: Modifier = Modifier) {
+fun CalendarViewDetail(
+    modifier: Modifier = Modifier,
+    selectedMonth: YearMonth) {
+
     Column(modifier) {
         var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+        selectedDate = if(selectedDate.dayOfMonth !in 1..selectedMonth.lengthOfMonth()){
+            selectedMonth.atDay(selectedMonth.lengthOfMonth())
+        }else{
+            selectedMonth.atDay(selectedDate.dayOfMonth)
+        }
+
+        var currentMonth by remember { mutableStateOf(selectedMonth) }
+
         CalendarCard(
-            yearMonth = YearMonth.of(2025, selectedDate.month),
+            currentMonth = currentMonth,
             selectedDate = selectedDate,
             onDateSelected = { date ->
                 selectedDate = date
+                currentMonth = YearMonth.from(date)
             },
             monthlyBill = TestData.getTestDataMonthlyBill()
         )
@@ -310,7 +375,9 @@ fun BillItem(
 
 @Composable
 fun DatePickerDialogCard(){
-
+    Card {
+        MonthPicker()
+    }
 }
 
 @Preview
