@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -29,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -84,8 +88,9 @@ fun CalendarCard(
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),  // 减少垂直间距
+                horizontalArrangement = Arrangement.spacedBy(4.dp), // 减少水平间距
+                //modifier = Modifier.padding(horizontal = 8.dp)  // 添加水平内边距
             ) {
                 items(dates) { date ->
                     DayCell(
@@ -111,7 +116,6 @@ private fun generateCalendarDates(yearMonth: YearMonth): List<LocalDate> {
 
     val dates = mutableListOf<LocalDate>()
     var currentDate = firstVisibleDate
-    // A calendar grid is usually 6 weeks tall to accommodate all possible month layouts
     for (i in 0 until 42) {
         dates.add(currentDate)
         currentDate = currentDate.plusDays(1)
@@ -138,41 +142,67 @@ private fun DayCell(
         date.dayOfMonth.toString()
     }
 
-    val dateTextColor = when {
+    val textColor = when {
         isSelected -> Color.White
         isCurrentMonth -> Color.Black
         else -> Color.Gray.copy(alpha = 0.5f)
     }
 
-    val textColor = when{
-        isSelected -> Color.Black
-        else -> Color.Gray.copy(alpha = 0.5f)
-    }
-
-    Box(
+    Box (
         modifier = Modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(25))
+            .fillMaxWidth()
+            //.height(50.dp)
+            .clip(RoundedCornerShape(12.dp))  // 调整圆角大小
             .background(if (isSelected) Color(0xFF81D4FA) else Color.Transparent)
             .clickable {
                 onClick(date)
-                Log.d("lengzq", " seleted Date $date")
-           },
-        contentAlignment = Alignment.Center
+                Log.d("lengzq", " selected Date $date")
+            }
     ) {
-        Text(
-            text = displayText,
-            color = dateTextColor,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            fontSize = 14.sp
-        )
-        Text(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            text = text,
-            color = textColor,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            fontSize = 8.sp
-        )
+        Column(
+            modifier = Modifier.fillMaxSize().padding(vertical = 5.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center  // 改回整体居中
+        ) {
+            // 月份标题
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    lineHeight = with(LocalDensity.current) { 12.dp.toSp() }
+                ),
+                text = displayText,
+                color = textColor,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                fontSize = with(LocalDensity.current) { 12.dp.toSp() }
+            )
+
+            // 第一个金额信息
+            Text(
+                modifier = Modifier.fillMaxWidth().heightIn(10.dp),
+                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    lineHeight = with(LocalDensity.current) { 10.dp.toSp() }
+                ),
+                text = text,
+                color = textColor,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                fontSize = with(LocalDensity.current) { 10.dp.toSp() }  // 适当增大字体
+            )
+
+
+            Text(
+                modifier = Modifier.fillMaxWidth().height(10.dp),
+                style = TextStyle(
+                    lineHeight = with(LocalDensity.current) { 10.dp.toSp() }
+                ),
+                textAlign = TextAlign.Center,
+                text = text,
+                color = textColor,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                fontSize = with(LocalDensity.current) { 10.dp.toSp() }  // 适当增大字体
+            )
+        }
     }
 }
 

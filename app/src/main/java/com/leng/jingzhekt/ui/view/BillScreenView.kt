@@ -1,7 +1,6 @@
 package com.leng.jingzhekt.ui.view
 
 import android.util.Log
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +24,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +56,6 @@ import com.leng.jingzhekt.ui.components.MonthPicker
 import com.leng.jingzhekt.ui.components.NoBillsPlaceholder
 import java.time.LocalDate
 import java.time.YearMonth
-import kotlin.reflect.KClass
 
 @Preview
 @Composable
@@ -64,68 +63,36 @@ fun BillScreenView(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val startDestination = BillScreenDestination.CALENDAR
     var tabSelectedIndex by remember { mutableIntStateOf(startDestination.ordinal) }
-
     var selectedMonth by remember { mutableStateOf(YearMonth.now()) }
     
     Scaffold(
         modifier = modifier,
         topBar = {
-            Row (
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(40.dp)
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
-            ){
-                TabRow(
+            ) {
+                // 使用统一的TabRow组件
+                CustomTabRow(
                     selectedTabIndex = tabSelectedIndex,
-                    modifier = Modifier.width(120.dp)
-                        .clip(RoundedCornerShape(50)),
-                    containerColor = Color(0xFFE3F2FD),
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier
-                                .tabIndicatorOffset(tabPositions[tabSelectedIndex])
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(50)),
-                            color = Color(0xFF81D4FA)
-                        )
-                    },
-                    divider = {},
-                    tabs = {
-                        BillScreenDestination.entries.forEachIndexed { index, destination ->
-                            Tab(
-                                modifier = Modifier
-                                    .zIndex(2f)
-                                    .height(24.dp),
-                                selected = tabSelectedIndex == index,
-                                onClick = {
-                                    navController.navigate(route = destination.route)
-                                    tabSelectedIndex = index
-                                },
-                                text = {
-                                    Text(
-                                        destination.label,
-                                        color = if (tabSelectedIndex == index) Color.Black else Color.Gray,
-                                        fontWeight = if (tabSelectedIndex == index) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                }
-                            )
-                        }
+                    onTabSelected = { index ->
+                        tabSelectedIndex = index
+                        val destination = BillScreenDestination.entries[index]
+                        navController.navigate(route = destination.route)
                     }
                 )
-                TabToolBar(onTabClick = { index ->
-                    navController.navigate(route = destination.route)
-                    tabSelectedIndex = index
-                })
+                
                 DateMonthPickerToolBar(
                     yearMonth = selectedMonth,
                     onLeftClick = {
                         selectedMonth = selectedMonth.minusMonths(1)
                     },
                     onDateClick = {
-
+                        // TODO: 实现日期选择器
                     },
                     onRightClick = {
                         selectedMonth = selectedMonth.plusMonths(1)
@@ -134,22 +101,32 @@ fun BillScreenView(modifier: Modifier = Modifier) {
             }
         }
     ) { innerPadding ->
-        BillNavHost(navController, startDestination, Modifier.padding(innerPadding), selectedMonth)
+        BillNavHost(
+            navController, 
+            startDestination, 
+            Modifier.padding(innerPadding), 
+            selectedMonth,
+            onMonthChanged = { newMonth ->
+                selectedMonth = newMonth
+            }
+        )
     }
 }
 
 @Composable
-fun TabToolBar(onTabClick: (index:Int, ) -> Unit){
-    var tabSelectedIndex by remember { mutableIntStateOf(BillScreenDestination.CALENDAR.ordinal) }
+fun CustomTabRow(
+    selectedTabIndex: Int,
+    onTabSelected: (Int) -> Unit
+) {
     TabRow(
-        selectedTabIndex = tabSelectedIndex,
+        selectedTabIndex = selectedTabIndex,
         modifier = Modifier.width(120.dp)
             .clip(RoundedCornerShape(50)),
         containerColor = Color(0xFFE3F2FD),
         indicator = { tabPositions ->
             TabRowDefaults.SecondaryIndicator(
                 Modifier
-                    .tabIndicatorOffset(tabPositions[tabSelectedIndex])
+                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
                     .fillMaxSize()
                     .clip(RoundedCornerShape(50)),
                 color = Color(0xFF81D4FA)
@@ -162,17 +139,13 @@ fun TabToolBar(onTabClick: (index:Int, ) -> Unit){
                     modifier = Modifier
                         .zIndex(2f)
                         .height(24.dp),
-                    selected = tabSelectedIndex == index,
-                    onClick = {
-                        navController.navigate(route = destination.route)
-                        tabSelectedIndex = index
-                        onTabClick(index, destination)
-                    },
+                    selected = selectedTabIndex == index,
+                    onClick = { onTabSelected(index) },
                     text = {
                         Text(
                             destination.label,
-                            color = if (tabSelectedIndex == index) Color.Black else Color.Gray,
-                            fontWeight = if (tabSelectedIndex == index) FontWeight.Bold else FontWeight.Normal
+                            color = if (selectedTabIndex == index) Color.Black else Color.Gray,
+                            fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
                         )
                     }
                 )
@@ -181,13 +154,13 @@ fun TabToolBar(onTabClick: (index:Int, ) -> Unit){
     )
 }
 
-
 @Composable
 fun BillNavHost(
     navController: NavHostController,
     startDestination: BillScreenDestination,
     modifier: Modifier = Modifier,
-    selectedMonth: YearMonth
+    selectedMonth: YearMonth,
+    onMonthChanged: (YearMonth) -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -197,7 +170,11 @@ fun BillNavHost(
             composable(destination.route) {
                 when (destination) {
                     BillScreenDestination.STATEMENT -> StatementView(modifier)
-                    BillScreenDestination.CALENDAR -> CalendarViewDetail(modifier, selectedMonth)
+                    BillScreenDestination.CALENDAR -> CalendarViewDetail(
+                        modifier = modifier, 
+                        selectedMonth = selectedMonth,
+                        onMonthChanged = onMonthChanged
+                    )
                 }
             }
         }
@@ -224,54 +201,59 @@ fun StatementView(modifier: Modifier) {
 @Composable
 fun CalendarViewDetail(
     modifier: Modifier = Modifier,
-    selectedMonth: YearMonth) {
-
+    selectedMonth: YearMonth,
+    onMonthChanged: (YearMonth) -> Unit = {}
+) {
     Column(modifier) {
         var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-
-        selectedDate = if(selectedDate.dayOfMonth !in 1..selectedMonth.lengthOfMonth()){
-            selectedMonth.atDay(selectedMonth.lengthOfMonth())
-        }else{
-            selectedMonth.atDay(selectedDate.dayOfMonth)
+        
+        // 使用LaunchedEffect来监听selectedMonth的变化
+        LaunchedEffect(selectedMonth) {
+            // 当月份改变时，确保selectedDate在有效范围内
+            val maxDay = selectedMonth.lengthOfMonth()
+            if (selectedDate.dayOfMonth > maxDay) {
+                selectedDate = selectedMonth.atDay(maxDay)
+            } else if (selectedDate.month != selectedMonth.month) {
+                selectedDate = selectedMonth.atDay(selectedDate.dayOfMonth.coerceAtMost(maxDay))
+            }
         }
 
-        var currentMonth by remember { mutableStateOf(selectedMonth) }
-
         CalendarCard(
-            currentMonth = currentMonth,
+            currentMonth = selectedMonth, // 直接使用selectedMonth，确保同步
             selectedDate = selectedDate,
             onDateSelected = { date ->
                 selectedDate = date
-                currentMonth = YearMonth.from(date)
+                val newMonth = YearMonth.from(date)
+                // 当月份改变时，通知父组件
+                if (newMonth != selectedMonth) {
+                    onMonthChanged(newMonth)
+                }
+                Log.d("lengzq", "current" +
+                        " $date")
             },
             monthlyBill = TestData.getTestDataMonthlyBill()
         )
         
-        DailyBillDetailCard(TestData.getDailyBillByDate(selectedDate))
+        DailyBillDetailCard(TestData.getDailyBillByDate(selectedDate),selectedDate)
     }
 }
 
 @Composable
 fun BillListCard(
-    monthlyBill: MonthlyBill ?=null
+    monthlyBill: MonthlyBill? = null
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            ,
+            .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(20.dp)
     ) {
-
-        val state = rememberScrollState()
-
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-
-            if(monthlyBill == null || monthlyBill.dailyBillList.isEmpty()){
+            if (monthlyBill == null || monthlyBill.dailyBillList.isEmpty()) {
                 NoBillsPlaceholder()
-            }else {
+            } else {
                 monthlyBill.dailyBillList.forEachIndexed { index, dailyBill ->
                     DailyListItem(dailyBill)
                 }
@@ -281,27 +263,27 @@ fun BillListCard(
 }
 
 @Composable
-fun DailyBillDetailCard(dailyBill: DailyBill?){
-
+fun DailyBillDetailCard(dailyBill: DailyBill?, selectedDate: LocalDate) {
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        DailyListItem(dailyBill)
+        DailyListItem(dailyBill,selectedDate)
     }
 }
 
 @Composable
 fun DailyListItem(
     dailyBill: DailyBill?,
-){
-    Column (modifier = Modifier.padding(16.dp)) {
+    selectedDate:LocalDate = LocalDate.now()) {
+    Log.d("lengzq", " $selectedDate")
+    Column(modifier = Modifier.padding(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("${dailyBill?.date}")
+            Text(" $selectedDate")
             Row {
                 Text(
                     "收 ￥${dailyBill?.income ?: "0.00"}",
@@ -320,9 +302,9 @@ fun DailyListItem(
         )
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                if(dailyBill == null){
+                if (dailyBill == null) {
                     NoBillsPlaceholder()
-                }else {
+                } else {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         dailyBill.billList.forEachIndexed { index, item ->
                             BillItem(item)
@@ -335,9 +317,7 @@ fun DailyListItem(
 }
 
 @Composable
-fun BillItem(
-    bill: Bill
-){
+fun BillItem(bill: Bill) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -354,11 +334,8 @@ fun BillItem(
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(text = bill.classify.name)
-                Row(modifier = Modifier.align(Alignment.CenterEnd)) {
-
-                }
                 Text(
-                    text = "￥" + bill.amount,
+                    text = "￥${bill.amount}",
                     modifier = Modifier.align(Alignment.CenterEnd)
                 )
             }
@@ -372,37 +349,38 @@ fun BillItem(
     }
 }
 
-
 @Composable
-fun DatePickerDialogCard(){
+fun DatePickerDialogCard() {
     Card {
         MonthPicker()
     }
 }
 
+
 @Preview
 @Composable
-fun DatePickerDialogCardPreview(){
+fun DatePickerDialogCardPreview() {
     DatePickerDialogCard()
 }
 
 @Preview
 @Composable
-fun BillItemPreview(){
+fun BillItemPreview() {
     val bill = TestData.getTestDataBill()
     BillItem(bill)
 }
 
 @Preview
 @Composable
-fun BillListCardPreview(){
+fun BillListCardPreview() {
     val monthlyBill = TestData.getTestDataMonthlyBill()
     BillListCard(monthlyBill)
 }
 
+/*
 @Preview
 @Composable
-fun DailyBillDetailCardPreview(){
+fun DailyBillDetailCardPreview() {
     val dailyBill = TestData.getTestDataDailyBill()
     DailyBillDetailCard(dailyBill)
-}
+}*/
