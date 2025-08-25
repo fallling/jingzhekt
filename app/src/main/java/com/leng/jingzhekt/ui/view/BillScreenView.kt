@@ -204,7 +204,7 @@ fun CalendarViewDetail(
     selectedMonth: YearMonth,
     onMonthChanged: (YearMonth) -> Unit = {}
 ) {
-    Column(modifier) {
+    Column(modifier.verticalScroll(rememberScrollState())) {
         var selectedDate by remember { mutableStateOf(LocalDate.now()) }
         
         // 使用LaunchedEffect来监听selectedMonth的变化
@@ -249,7 +249,7 @@ fun BillListCard(
         shape = RoundedCornerShape(20.dp)
     ) {
         Column(
-            modifier = Modifier.verticalScroll(rememberScrollState())
+            //modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
             if (monthlyBill == null || monthlyBill.dailyBillList.isEmpty()) {
                 NoBillsPlaceholder()
@@ -267,7 +267,7 @@ fun DailyBillDetailCard(dailyBill: DailyBill?, selectedDate: LocalDate) {
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .verticalScroll(rememberScrollState())
+            //.verticalScroll(rememberScrollState())
     ) {
         DailyListItem(dailyBill,selectedDate)
     }

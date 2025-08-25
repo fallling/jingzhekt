@@ -9,16 +9,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,9 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.leng.jingzhekt.Entity.MonthlyBill
 import com.leng.jingzhekt.TestData
 import java.time.LocalDate
-import java.time.Year
 import java.time.YearMonth
-import kotlin.math.log
 
 @Composable
 fun CalendarCard(
@@ -86,23 +83,36 @@ fun CalendarCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
-                verticalArrangement = Arrangement.spacedBy(4.dp),  // 减少垂直间距
-                horizontalArrangement = Arrangement.spacedBy(4.dp), // 减少水平间距
-                //modifier = Modifier.padding(horizontal = 8.dp)  // 添加水平内边距
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(dates) { date ->
-                    DayCell(
-                        date = date,
-                        text = if (date.dayOfMonth < monthlyBill.dailyBillList.size)
-                            "-" + monthlyBill.dailyBillList[date.dayOfMonth-1].dailyAmount else "",
-                        isCurrentMonth = date.month == currentMonth.month,
-                        isSelected = date == selectedDate,
-                        onClick = {
-                            onDateSelected(it)
+                // 将42个日期分成6行，每行7列
+                dates.chunked(7).forEach { rowDates ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        rowDates.forEach { date ->
+
+                            var amount: Float? = null
+                            monthlyBill.dailyBillList.forEach { dailyBill ->
+                                if (dailyBill.date == date) {
+                                    amount = dailyBill.dailyAmount
+                                }
+                            }
+                            DayCell(
+                                modifier = Modifier.weight(1f),
+                                date = date,
+                                text = if (amount != null)
+                                    "-$amount" else "",
+                                isCurrentMonth = date.month == currentMonth.month,
+                                isSelected = date == selectedDate,
+                                onClick = {
+                                    onDateSelected(it)
+                                }
+                            )
                         }
-                    )
+                    }
                 }
             }
         }
@@ -125,6 +135,7 @@ private fun generateCalendarDates(yearMonth: YearMonth): List<LocalDate> {
 
 @Composable
 private fun DayCell(
+    modifier: Modifier,
     date: LocalDate,
     text: String,
     isCurrentMonth: Boolean,
@@ -143,24 +154,31 @@ private fun DayCell(
     }
 
     val textColor = when {
-        isSelected -> Color.White
-        isCurrentMonth -> Color.Black
-        else -> Color.Gray.copy(alpha = 0.5f)
+        isSelected -> Color.Black
+        isCurrentMonth -> Color.Gray
+        else -> Color.Transparent
+    }
+
+    val backgroundColor = when {
+        isSelected -> Color(0xffaed8f6)
+        text.isNotEmpty() -> Color(0xffe9f2ff)
+        isCurrentMonth -> Color(0xfff5f5f5)
+        else -> Color.Transparent
     }
 
     Box (
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             //.height(50.dp)
+            .heightIn(48.dp)
             .clip(RoundedCornerShape(12.dp))  // 调整圆角大小
-            .background(if (isSelected) Color(0xFF81D4FA) else Color.Transparent)
+            .background(backgroundColor)
             .clickable {
                 onClick(date)
                 Log.d("lengzq", " selected Date $date")
             }
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(vertical = 5.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center  // 改回整体居中
         ) {
@@ -169,34 +187,20 @@ private fun DayCell(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = TextStyle(
-                    lineHeight = with(LocalDensity.current) { 12.dp.toSp() }
+                    lineHeight = with(LocalDensity.current) { 14.dp.toSp() }
                 ),
                 text = displayText,
-                color = textColor,
+                color = if(isCurrentMonth) Color.Black else Color.Gray,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                fontSize = with(LocalDensity.current) { 12.dp.toSp() }
+                fontSize = with(LocalDensity.current) { 14.dp.toSp() }
             )
 
-            // 第一个金额信息
             Text(
-                modifier = Modifier.fillMaxWidth().heightIn(10.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                 textAlign = TextAlign.Center,
                 style = TextStyle(
                     lineHeight = with(LocalDensity.current) { 10.dp.toSp() }
                 ),
-                text = text,
-                color = textColor,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                fontSize = with(LocalDensity.current) { 10.dp.toSp() }  // 适当增大字体
-            )
-
-
-            Text(
-                modifier = Modifier.fillMaxWidth().height(10.dp),
-                style = TextStyle(
-                    lineHeight = with(LocalDensity.current) { 10.dp.toSp() }
-                ),
-                textAlign = TextAlign.Center,
                 text = text,
                 color = textColor,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
