@@ -18,13 +18,18 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,8 +42,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.leng.jingzhekt.Entity.MonthlyBill
 import com.leng.jingzhekt.TestData
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -250,6 +260,167 @@ private fun MonthCell(
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun DatePickerDialog(){
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tabs = listOf("按月查看", "按年查看")
+    Column {
+        PrimaryTabRow(
+            selectedTabIndex = selectedTabIndex
+        ){
+            tabs.forEachIndexed{index, string ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = {
+                        selectedTabIndex = index
+                    },
+                    text = {
+                        Text(string)
+                    }
+                )
+            }
+        }
+        Row {
+            when(selectedTabIndex){
+                0 -> MonthPickerView()
+                1 -> YearPickerView()
+            }
+        }
+    }
+
+
+}
+
+@Composable
+fun YearPickerView(
+    modifier: Modifier = Modifier,
+    currentYear: Int = 2025,
+    selectedYear: Int = 6,
+    onYearChanged: (Int) -> Unit = {},
+    onMonthSelected: (Int) -> Unit = {}
+){
+    val yearList = listOf(2018,2019,2020,2021,2022,2023,2024,2025,2026,2027,2028,2029)
+
+    Column(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Row {
+            // 年份选择行
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "<",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onYearChanged(currentYear - 1) }
+                )
+
+                Text(
+                    text = "年份",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = ">",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onYearChanged(currentYear + 1) }
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            // 月份网格
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(12) { index ->
+                    val month = index + 1
+                    MonthCell(
+                        month = yearList[index],
+                        monthName = yearList[index].toString(),
+                        isSelected = month == selectedYear,
+                        onClick = { onMonthSelected(month) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun MonthPickerView(
+    modifier: Modifier = Modifier,
+    currentYear: Int = 2025,
+    selectedMonth: Int = 6,
+    onYearChanged: (Int) -> Unit = {},
+    onMonthSelected: (Int) -> Unit = {}
+){
+    val monthNames = mapOf(
+        1 to "1月", 2 to "2月", 3 to "3月", 4 to "4月", 5 to "5月", 6 to "6月",
+        7 to "7月", 8 to "8月", 9 to "9月", 10 to "10月", 11 to "11月", 12 to "12月"
+    )
+    Column(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        // 年份选择行
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "<",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onYearChanged(currentYear - 1) }
+            )
+
+            Text(
+                text = currentYear.toString(),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Text(
+                text = ">",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onYearChanged(currentYear + 1) }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // 月份网格
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            items(12) { index ->
+                val month = index + 1
+                MonthCell(
+                    month = month,
+                    monthName = monthNames[month] ?: "",
+                    isSelected = month == selectedMonth,
+                    onClick = { onMonthSelected(month) }
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun MonthPicker(

@@ -15,14 +15,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -57,6 +61,7 @@ import com.leng.jingzhekt.ui.components.NoBillsPlaceholder
 import java.time.LocalDate
 import java.time.YearMonth
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun BillScreenView(modifier: Modifier = Modifier) {
@@ -64,7 +69,9 @@ fun BillScreenView(modifier: Modifier = Modifier) {
     val startDestination = BillScreenDestination.CALENDAR
     var tabSelectedIndex by remember { mutableIntStateOf(startDestination.ordinal) }
     var selectedMonth by remember { mutableStateOf(YearMonth.now()) }
-    
+
+    var showSheet by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -92,7 +99,7 @@ fun BillScreenView(modifier: Modifier = Modifier) {
                         selectedMonth = selectedMonth.minusMonths(1)
                     },
                     onDateClick = {
-                        // TODO: 实现日期选择器
+                        showSheet = true
                     },
                     onRightClick = {
                         selectedMonth = selectedMonth.plusMonths(1)
@@ -101,6 +108,7 @@ fun BillScreenView(modifier: Modifier = Modifier) {
             }
         }
     ) { innerPadding ->
+
         BillNavHost(
             navController, 
             startDestination, 
@@ -110,6 +118,20 @@ fun BillScreenView(modifier: Modifier = Modifier) {
                 selectedMonth = newMonth
             }
         )
+
+        val sheetState = rememberModalBottomSheetState()
+
+        if (showSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showSheet = false },
+                sheetState = sheetState,
+                dragHandle = null
+            ) {
+                Card() {
+                    MonthPicker()
+                }
+            }
+        }
     }
 }
 
@@ -349,18 +371,28 @@ fun BillItem(bill: Bill) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerDialogCard() {
-    Card {
-        MonthPicker()
+fun DatePickerDialogCard(onDismissRequest:() -> Unit) {
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        sheetState = sheetState
+    ) {
+        Card {
+            MonthPicker()
+        }
     }
+
 }
 
 
 @Preview
 @Composable
 fun DatePickerDialogCardPreview() {
-    DatePickerDialogCard()
+    //DatePickerDialogCard()
 }
 
 @Preview
