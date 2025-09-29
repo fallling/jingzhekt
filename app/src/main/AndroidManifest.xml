@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".JingZheApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -26,6 +27,7 @@
 
         <activity
             android:name=".AddBillActivity"
+            android:windowSoftInputMode="adjustNothing|stateAlwaysHidden"
             android:exported="false">
 
         </activity>

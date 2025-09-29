@@ -4,8 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.leng.jingzhekt.ui.theme.AppTheme
-import com.leng.jingzhekt.ui.view.BillClassification
+import com.leng.jingzhekt.presentation.ui.components.BillClassification
+import com.leng.jingzhekt.presentation.ui.theme.AppTheme
+
 
 class AddBillActivity : ComponentActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {

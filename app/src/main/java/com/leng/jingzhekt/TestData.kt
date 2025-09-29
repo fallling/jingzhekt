@@ -26,15 +26,15 @@ class TestData {
         val classify_entertainment = Classify.create("娱乐", R.drawable.theaters_24px , Level.Major)
 
 
-        val bill1 = Bill.create(classify_transport, BillType.EXPEND, LocalDateTime.now().minusDays(3), 151.0f,"公交车")
-        val bill2 = Bill.create(classify_gift, BillType.EXPEND, LocalDateTime.now().minusDays(3), 123.0f,"红包")
+        val bill1 = Bill.create(classify_transport.id, BillType.EXPEND, LocalDateTime.now().minusDays(3), 151.0f,"公交车")
+        val bill2 = Bill.create(classify_gift.id, BillType.EXPEND, LocalDateTime.now().minusDays(3), 123.0f,"红包")
 
-        val bill3 = Bill.create(classify_catering, BillType.EXPEND, LocalDateTime.now(), 150.0f,"午饭")
-        val bill4 = Bill.create(classify_snacks, BillType.EXPEND, LocalDateTime.now(), 150.0f,"零食")
-        val bill5 = Bill.create(classify_catering, BillType.EXPEND, LocalDateTime.now(), 150.0f,"晚餐")
-        val bill6 = Bill.create(classify_communication, BillType.EXPEND, LocalDateTime.now(), 150.0f,"电话费")
-        val bill7 = Bill.create(classify_communication, BillType.EXPEND, LocalDateTime.now(), 160.0f,"测试2")
-        val bill8 = Bill.create(classify_communication, BillType.EXPEND, LocalDateTime.now(), 160.0f,"测试3")
+        val bill3 = Bill.create(classify_catering.id, BillType.EXPEND, LocalDateTime.now(), 150.0f,"午饭")
+        val bill4 = Bill.create(classify_snacks.id, BillType.EXPEND, LocalDateTime.now(), 150.0f,"零食")
+        val bill5 = Bill.create(classify_catering.id, BillType.EXPEND, LocalDateTime.now(), 150.0f,"晚餐")
+        val bill6 = Bill.create(classify_communication.id, BillType.EXPEND, LocalDateTime.now(), 150.0f,"电话费")
+        val bill7 = Bill.create(classify_communication.id, BillType.EXPEND, LocalDateTime.now(), 160.0f,"测试2")
+        val bill8 = Bill.create(classify_communication.id, BillType.EXPEND, LocalDateTime.now(), 160.0f,"测试3")
 
         val dailyBill1 = DailyBill(listOf(bill1, bill2))
         val dailyBill2 = DailyBill(listOf(bill3, bill4, bill5, bill6,bill7,bill8))

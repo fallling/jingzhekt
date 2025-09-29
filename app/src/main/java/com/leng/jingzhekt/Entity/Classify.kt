@@ -1,22 +1,27 @@
 package com.leng.jingzhekt.Entity
 
-import java.util.concurrent.atomic.AtomicInteger
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 enum class Level {
-    Major,Minor
+    Major, Minor
 }
 
+@Entity(tableName = "classify")
 data class Classify(
-    val id : Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val name: String,
     val iconResId: Int,
     val level: Level
-){
-    companion object{
-        private val idGenerator = AtomicInteger(1)
-
-        fun create(name:String, iconResId: Int, level: Level):Classify{
-            return Classify(idGenerator.getAndIncrement(), name,iconResId, level)
+) {
+    companion object {
+        fun create(name: String, iconResId: Int, level: Level): Classify {
+            return Classify(
+                name = name,
+                iconResId = iconResId,
+                level = level
+            )
         }
     }
 }

@@ -1,0 +1,74 @@
+package com.leng.jingzhekt.ui.navigation
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+
+@Preview
+@Composable
+fun AppTopBar(){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Top))
+    ) {
+        // 搜索按钮（靠右）
+        IconButton(
+            onClick = { /* 搜索 */ },
+            modifier = Modifier.align(Alignment.CenterEnd)
+        ) {
+            Icon(
+                Icons.Filled.Search,
+                contentDescription = "搜索",
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+        // 标题和刷新按钮组（居中）
+        Row(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "默认账本",
+                style = MaterialTheme.typography.titleLarge
+            )
+            IconButton(
+                onClick = { /* 刷新 */ },
+                modifier = Modifier.padding()
+            ) {
+                Icon(Icons.Filled.Refresh, contentDescription = "刷新", modifier = Modifier.size(20.dp))
+            }
+        }
+    }
+}
