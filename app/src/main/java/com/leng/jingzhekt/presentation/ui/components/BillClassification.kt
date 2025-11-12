@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -28,26 +29,100 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.leng.jingzhekt.Entity.Classify
+import com.leng.jingzhekt.Entity.Level
+import com.leng.jingzhekt.R
+import com.leng.jingzhekt.presentation.viewmodel.ClassifyViewModel
+import com.leng.jingzhekt.presentation.viewmodel.ClassifyUiState
 import com.leng.jingzhekt.ui.components.Keyboard
+import java.time.YearMonth
 
-@Preview(showBackground = true)
+// 为 Preview 提供示例数据
+private fun getSampleClassifies(): List<Classify> {
+    return listOf(
+        // 主要支出分类
+        Classify.create("餐饮", com.leng.jingzhekt.R.drawable.icon_food, Level.Major),
+        Classify.create("购物", com.leng.jingzhekt.R.drawable.icon_shopping, Level.Major),
+        Classify.create("交通", com.leng.jingzhekt.R.drawable.icon_traffic, Level.Major),
+        Classify.create("娱乐", com.leng.jingzhekt.R.drawable.icon_entertainment, Level.Major),
+        Classify.create("医疗", com.leng.jingzhekt.R.drawable.icon_medicine, Level.Major),
+        Classify.create("教育", com.leng.jingzhekt.R.drawable.icon_study, Level.Major),
+        Classify.create("住房", com.leng.jingzhekt.R.drawable.icon_houserent, Level.Major),
+
+        // 主要收入分类
+        Classify.create("工资", com.leng.jingzhekt.R.drawable.icon_salary, Level.Major),
+        Classify.create("奖金", com.leng.jingzhekt.R.drawable.icon_winning, Level.Major),
+        Classify.create("投资", com.leng.jingzhekt.R.drawable.icon_investment, Level.Major),
+
+        // 次要分类
+        Classify.create("早餐", com.leng.jingzhekt.R.drawable.icon_food, Level.Minor),
+        Classify.create("午餐", com.leng.jingzhekt.R.drawable.icon_food, Level.Minor),
+        Classify.create("晚餐", com.leng.jingzhekt.R.drawable.icon_food, Level.Minor),
+        Classify.create("服装", com.leng.jingzhekt.R.drawable.icon_shopping, Level.Minor),
+        Classify.create("日用品", com.leng.jingzhekt.R.drawable.icon_daily, Level.Minor),
+        Classify.create("公交", com.leng.jingzhekt.R.drawable.icon_traffic, Level.Minor),
+        Classify.create("打车", R.drawable.icon_traffic, Level.Minor)
+    )
+}
+
 @Composable
-fun BillClassification() {
+@Preview(name = "正常状态")
+fun BillClassificationPreview(){
+    BillClassificationContent(
+        uiState = ClassifyUiState(
+            classifies = getSampleClassifies(),
+            isLoading = false
+        )
+    )
+}
+
+@Composable
+@Preview(name = "加载状态")
+fun BillClassificationLoadingPreview(){
+    BillClassificationContent(
+        uiState = ClassifyUiState(
+            classifies = emptyList(),
+            isLoading = true
+        )
+    )
+}
+
+@Composable
+@Preview(name = "空数据状态")
+fun BillClassificationEmptyPreview(){
+    BillClassificationContent(
+        uiState = ClassifyUiState(
+            classifies = emptyList(),
+            isLoading = false
+        )
+    )
+}
+
+@Composable
+fun BillClassification(
+    classifyViewModel: ClassifyViewModel = hiltViewModel()
+) {
+    val uiState by classifyViewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        classifyViewModel.loadAllClassifyList()
+    }
+
+    BillClassificationContent(uiState = uiState)
+}
+
+@Composable
+fun BillClassificationContent(
+    uiState: ClassifyUiState
+) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("支出", "收入")
 
     var mountInputState by remember { mutableStateOf(false)}
     val focusManager = LocalFocusManager.current
-    val categories = listOf(
-        "餐饮", "零食", "日用", "购物", "交通",
-        "饮品", "水果", "服饰", "娱乐", "住房",
-        "人情", "通讯", "其它", "分类管理"
-    )
-    val categoryIcons = listOf(
-        "🍽️", "🧁", "🧻", "💄", "🚌",
-        "🥤", "🍎", "👕", "🎬", "🏠",
-        "🎁", "📞", "…", "🔧"
-    )
+
     var selectedCategory by remember { mutableIntStateOf(0) }
 
     Scaffold(
@@ -100,9 +175,29 @@ fun BillClassification() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 分类网格
-                val colCount = 5
-                val gridItems = categories.size
+                // 加载状态或分类网格
+                if (uiState.isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else if (uiState.classifies.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "暂无分类数据",
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+                    }
+                } else {
+                    // 分类网格
+                    val colCount = 5
+                    val gridItems = uiState.classifies.size
                 for (row in 0 until (gridItems + colCount - 1) / colCount) {
                     Row(
                         modifier = Modifier
@@ -112,7 +207,8 @@ fun BillClassification() {
                     ) {
                         for (col in 0 until colCount) {
                             val index = row * colCount + col
-                            if (index < categories.size) {
+                            if (index < uiState.classifies.size) {
+                                val classify = uiState.classifies[index]
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier
@@ -130,14 +226,15 @@ fun BillClassification() {
                                             ),
                                         contentAlignment = Alignment.Center
                                     ) {
+                                        // 使用分类的图标资源ID或默认emoji
                                         Text(
-                                            text = categoryIcons[index],
+                                            text = (classify.name),
                                             fontSize = 28.sp
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = categories[index],
+                                        text = classify.name,
                                         fontSize = 14.sp,
                                         color = Color.Black
                                     )
@@ -148,6 +245,7 @@ fun BillClassification() {
                         }
                     }
                 }
+                } // 结束分类网格的 else 块
 
             }
             

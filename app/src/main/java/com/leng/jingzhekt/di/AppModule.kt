@@ -5,6 +5,8 @@ import androidx.room.Room
 import com.leng.jingzhekt.data.local.AppDatabase
 import com.leng.jingzhekt.data.local.dao.BillDao
 import com.leng.jingzhekt.data.local.dao.ClassifyDao
+import com.leng.jingzhekt.data.local.DatabaseInitializer
+import com.leng.jingzhekt.data.local.DatabasePopulator
 import com.leng.jingzhekt.data.repository.BillRepositoryImpl
 import com.leng.jingzhekt.data.repository.ClassifyRepositoryImpl
 import com.leng.jingzhekt.domain.repository.BillRepository
@@ -43,4 +45,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideClassifyRepository(classifyDao: ClassifyDao): ClassifyRepository = ClassifyRepositoryImpl(classifyDao)
+    
+    @Provides
+    @Singleton
+    fun provideDatabasePopulator(
+        classifyDao: ClassifyDao,
+        billDao: BillDao
+    ): DatabasePopulator = DatabasePopulator(classifyDao, billDao)
+    
+    @Provides
+    @Singleton
+    fun provideDatabaseInitializer(
+        databasePopulator: DatabasePopulator
+    ): DatabaseInitializer = DatabaseInitializer(databasePopulator)
 }
