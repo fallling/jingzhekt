@@ -1,31 +1,54 @@
 package com.leng.jingzhekt.presentation.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -34,35 +57,34 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.Level
 import com.leng.jingzhekt.R
-import com.leng.jingzhekt.presentation.viewmodel.ClassifyViewModel
 import com.leng.jingzhekt.presentation.viewmodel.ClassifyUiState
+import com.leng.jingzhekt.presentation.viewmodel.ClassifyViewModel
 import com.leng.jingzhekt.ui.components.Keyboard
-import java.time.YearMonth
 
 // 为 Preview 提供示例数据
 private fun getSampleClassifies(): List<Classify> {
     return listOf(
         // 主要支出分类
-        Classify.create("餐饮", com.leng.jingzhekt.R.drawable.icon_food, Level.Major),
-        Classify.create("购物", com.leng.jingzhekt.R.drawable.icon_shopping, Level.Major),
-        Classify.create("交通", com.leng.jingzhekt.R.drawable.icon_traffic, Level.Major),
-        Classify.create("娱乐", com.leng.jingzhekt.R.drawable.icon_entertainment, Level.Major),
-        Classify.create("医疗", com.leng.jingzhekt.R.drawable.icon_medicine, Level.Major),
-        Classify.create("教育", com.leng.jingzhekt.R.drawable.icon_study, Level.Major),
-        Classify.create("住房", com.leng.jingzhekt.R.drawable.icon_houserent, Level.Major),
+        Classify.create("餐饮", R.drawable.icon_food, Level.Major),
+        Classify.create("购物", R.drawable.icon_shopping, Level.Major),
+        Classify.create("交通", R.drawable.icon_traffic, Level.Major),
+        Classify.create("娱乐", R.drawable.icon_entertainment, Level.Major),
+        Classify.create("医疗", R.drawable.icon_medicine, Level.Major),
+        Classify.create("教育", R.drawable.icon_study, Level.Major),
+        Classify.create("住房", R.drawable.icon_houserent, Level.Major),
 
         // 主要收入分类
-        Classify.create("工资", com.leng.jingzhekt.R.drawable.icon_salary, Level.Major),
-        Classify.create("奖金", com.leng.jingzhekt.R.drawable.icon_winning, Level.Major),
-        Classify.create("投资", com.leng.jingzhekt.R.drawable.icon_investment, Level.Major),
+        Classify.create("工资", R.drawable.icon_salary, Level.Major),
+        Classify.create("奖金", R.drawable.icon_winning, Level.Major),
+        Classify.create("投资", R.drawable.icon_investment, Level.Major),
 
         // 次要分类
-        Classify.create("早餐", com.leng.jingzhekt.R.drawable.icon_food, Level.Minor),
-        Classify.create("午餐", com.leng.jingzhekt.R.drawable.icon_food, Level.Minor),
-        Classify.create("晚餐", com.leng.jingzhekt.R.drawable.icon_food, Level.Minor),
-        Classify.create("服装", com.leng.jingzhekt.R.drawable.icon_shopping, Level.Minor),
-        Classify.create("日用品", com.leng.jingzhekt.R.drawable.icon_daily, Level.Minor),
-        Classify.create("公交", com.leng.jingzhekt.R.drawable.icon_traffic, Level.Minor),
+        Classify.create("早餐", R.drawable.icon_food, Level.Minor),
+        Classify.create("午餐", R.drawable.icon_food, Level.Minor),
+        Classify.create("晚餐", R.drawable.icon_food, Level.Minor),
+        Classify.create("服装", R.drawable.icon_shopping, Level.Minor),
+        Classify.create("日用",R.drawable.icon_daily, Level.Minor),
+        Classify.create("公交", R.drawable.icon_traffic, Level.Minor),
         Classify.create("打车", R.drawable.icon_traffic, Level.Minor)
     )
 }
@@ -227,9 +249,13 @@ fun BillClassificationContent(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         // 使用分类的图标资源ID或默认emoji
-                                        Text(
-                                            text = (classify.name),
-                                            fontSize = 28.sp
+                                        Icon(
+                                            //imageVector = ImageVector.vectorResource(classify.iconResId)
+                                            painterResource(2131165440)
+                                            ,
+                                            contentDescription = "餐饮",
+                                            modifier = Modifier.size(48.dp),
+                                            tint = Color.Unspecified // 保持原始颜色
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))

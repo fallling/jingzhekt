@@ -1,5 +1,6 @@
 package com.leng.jingzhekt.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.leng.jingzhekt.Entity.Bill
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 import javax.inject.Inject
+import kotlin.math.log
 
 @HiltViewModel
 class ClassifyViewModel @Inject constructor(
@@ -44,6 +46,8 @@ class ClassifyViewModel @Inject constructor(
                 )
             }
         }
+
+        Log.d("lengzq", "123123123123" + _uiState.value.classifies)
     }
 }
 

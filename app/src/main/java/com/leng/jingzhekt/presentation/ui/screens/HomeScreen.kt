@@ -42,6 +42,7 @@ import com.leng.jingzhekt.Entity.Bill
 import com.leng.jingzhekt.Entity.BillType
 import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.Level
+import com.leng.jingzhekt.R
 import com.leng.jingzhekt.presentation.ui.theme.AppTheme
 import com.leng.jingzhekt.presentation.viewmodel.HomeUiState
 import com.leng.jingzhekt.presentation.viewmodel.HomeViewModel
@@ -271,8 +272,7 @@ fun TodayBillCard(
                                     val classify = findClassifyById(item.classifyId)
                                     CircularIcon(
                                         painterResource(
-                                            classify?.iconResId
-                                                ?: com.leng.jingzhekt.R.drawable.pending_24px
+                                                 R.drawable.pending_24px
                                         ),
                                         backGroundColor = Color(0xffe9f2ff),
                                         iconSize = 24.dp,

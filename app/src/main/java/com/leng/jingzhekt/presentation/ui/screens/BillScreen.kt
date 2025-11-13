@@ -481,7 +481,7 @@ fun BillItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         CircularIcon(
-            painterResource(classify?.iconResId ?: R.drawable.pending_24px),
+            painterResource(R.drawable.pending_24px),
             backGroundColor = Color(0xFFE9F2FF),
             iconSize = 24.dp,
             size = 36.dp
