@@ -8,6 +8,7 @@ import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.MonthlyBill
 import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.domain.repository.ClassifyRepository
+import com.leng.jingzhekt.domain.usecase.ClassifyGetByTypeUseCase
 import com.leng.jingzhekt.domain.usecase.ClassifyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +21,7 @@ import kotlin.math.log
 
 @HiltViewModel
 class ClassifyViewModel @Inject constructor(
-    private val getClassifyUseCase: ClassifyUseCase,
+    private val getClassifyUseCase: ClassifyGetByTypeUseCase,
 ): ViewModel(){
     private val _uiState = MutableStateFlow(ClassifyUiState())
     val uiState: StateFlow<ClassifyUiState> = _uiState.asStateFlow()
@@ -34,7 +35,7 @@ class ClassifyViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             try {
-                getClassifyUseCase().collect { classifies ->
+                getClassifyUseCase(type).collect { classifies ->
                     _uiState.value = _uiState.value.copy(
                         classifies = classifies,
                         isLoading = false

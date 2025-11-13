@@ -1,6 +1,7 @@
 package com.leng.jingzhekt.data.repository
 
 import com.leng.jingzhekt.Entity.Classify
+import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.data.local.dao.ClassifyDao
 import com.leng.jingzhekt.domain.repository.ClassifyRepository
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +16,9 @@ class ClassifyRepositoryImpl @Inject constructor(
     override fun getAllClassifies(): Flow<List<Classify>> = classifyDao.getAllClassifies()
     
     override suspend fun getClassifyById(id: Int): Classify? = classifyDao.getClassifyById(id)
-    
+
+    override fun getClassifyByType(type: Type): Flow<List<Classify>> = classifyDao.getClassifyByType(type)
+
     override suspend fun insertClassify(classify: Classify) = classifyDao.insertClassify(classify)
     
     override suspend fun deleteClassify(classify: Classify) = classifyDao.deleteClassify(classify)

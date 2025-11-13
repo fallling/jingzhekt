@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">惊蛰</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_income">收入</string>
+    <string name="title_expend">支出</string>
+    <string name="unknown">未知</string>
+</resources>

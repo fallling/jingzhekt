@@ -2,6 +2,7 @@ package com.leng.jingzhekt.domain.repository
 
 import com.leng.jingzhekt.Entity.Bill
 import com.leng.jingzhekt.Entity.Classify
+import com.leng.jingzhekt.Entity.Type
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
@@ -17,6 +18,7 @@ interface BillRepository {
 
 interface ClassifyRepository {
     fun getAllClassifies(): Flow<List<Classify>>
+    fun getClassifyByType(type: Type): Flow<List<Classify>>
     suspend fun getClassifyById(id: Int): Classify?
     suspend fun insertClassify(classify: Classify)
     suspend fun deleteClassify(classify: Classify)

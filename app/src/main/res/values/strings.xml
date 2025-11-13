@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">jingzhekt</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="title_income">Income</string>
+    <string name="title_expend">Expend</string>
+    <string name="unknown">Unknown</string>
 </resources>

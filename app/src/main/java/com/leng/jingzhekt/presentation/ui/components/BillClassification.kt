@@ -1,5 +1,6 @@
 package com.leng.jingzhekt.presentation.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -27,6 +29,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabIndicatorScope
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -47,6 +51,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role.Companion
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,6 +70,7 @@ import com.leng.jingzhekt.R
 import com.leng.jingzhekt.presentation.viewmodel.ClassifyUiState
 import com.leng.jingzhekt.presentation.viewmodel.ClassifyViewModel
 import com.leng.jingzhekt.ui.components.Keyboard
+import kotlin.math.log
 
 // 为 Preview 提供示例数据
 private fun getSampleClassifies(type: Type): List<Classify> {
@@ -97,7 +103,7 @@ private fun getSampleClassifies(type: Type): List<Classify> {
 }
 
 @Composable
-@Preview(name = "正常状态")
+@Preview(name = "正常状态",locale = "zh-CN")
 fun BillClassificationPreview(){
     var tab by remember { mutableStateOf(Type.Expend) }
     BillClassificationContent(
@@ -112,7 +118,7 @@ fun BillClassificationPreview(){
 }
 
 @Composable
-@Preview(name = "加载状态")
+@Preview(name = "加载状态", )
 fun BillClassificationLoadingPreview(){
     BillClassificationContent(
         uiState = ClassifyUiState(
@@ -140,12 +146,13 @@ fun BillClassification(
     val uiState by classifyViewModel.uiState.collectAsStateWithLifecycle()
     var tab by remember { mutableStateOf(Type.Expend) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(tab) {
         classifyViewModel.loadAllClassifyList(tab)
     }
 
     BillClassificationContent(uiState = uiState, onTabChanged = {type ->
         tab = type
+        Log.d("lengzq", "BillClassification:  ${type.name}")
     })
 }
 
@@ -177,10 +184,11 @@ fun BillClassificationContent(
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF4F4F4))) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF4F4F4))) {
             if (mountInputState) {
-                Box(
-                    modifier = Modifier
+                Box(modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Black.copy(0.3f))
                         .zIndex(10f)
@@ -197,12 +205,20 @@ fun BillClassificationContent(
                     .padding(innerPadding)
             ) {
                 PrimaryTabRow(
-                    modifier = Modifier.background(Color.Transparent),
-                    selectedTabIndex = selectedTab
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null){
+                    },
+                    selectedTabIndex = selectedTab,
+                    containerColor = Color.Transparent,
+                    indicator = { TabRowDefaults.PrimaryIndicator(color=Color.Black) },
+                    divider = {}
                 ) {
                     tabs.forEachIndexed { index, tab ->
                         Tab(
                             selected = selectedTab == index,
+                            selectedContentColor = Color.Black,
+                            unselectedContentColor = Color.Gray,
                             onClick = {
                                 selectedTab = index
                                 navController.navigate(tab.name) {
@@ -212,7 +228,9 @@ fun BillClassificationContent(
                                 onTabChanged(tab)
                             },
                             text = {
-                                Text(text = tab.name, fontSize = 20.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                                //Text(text = stringResource(if(tab == Type.Expend) R.string.title_expend else R.string.title_income),
+                                Text(text = tab.name,
+                                    fontSize = 20.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                             }
                         )
                     }
@@ -256,10 +274,10 @@ fun BillClassificationContent(
                     .align(Alignment.BottomCenter)
                     .offset(
                         x = 0.dp,
-                        y = with(density) { 
+                        y = with(density) {
                             if (imeHeight > keyboardHeight.floatValue.toDp()) {
                                 // 系统键盘弹出时：向上偏移 = 自定义键盘高度 + 系统键盘高度 + 间距
-                                -( imeHeight + 8.dp)
+                                -(imeHeight + 8.dp)
                             } else {
                                 // 系统键盘未弹出时：向上偏移 = 自定义键盘高度 + 间距
                                 -(keyboardHeight.floatValue.toDp() + 8.dp)
@@ -285,14 +303,18 @@ fun ClassificationIcon(uiState: ClassifyUiState){
     // 加载状态或分类网格
     if (uiState.isLoading) {
         Box(
-            modifier = Modifier.fillMaxWidth().padding(32.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
         }
     } else if (uiState.classifies.isEmpty()) {
         Box(
-            modifier = Modifier.fillMaxWidth().padding(32.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -323,18 +345,14 @@ fun ClassificationIcon(uiState: ClassifyUiState){
                                 .padding(4.dp)
                                 .clickable { selectedCategory = index }
                         ) {
+
+                            //显示图标
                             Box(
-                                modifier = Modifier
-                                    .size(56.dp)
-                                    .background(
-                                        if (selectedCategory == index) Color(0xFFB2D7F5) else Color(
-                                            0xFFF2F2F2
-                                        ),
-                                        shape = CircleShape
-                                    ),
+                                modifier = Modifier.size(56.dp)
+                                    .background(if (selectedCategory == index) Color(0xFFB2D7F5) else Color(0xFFF2F2F2),
+                                        shape = CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                // 使用分类的图标资源ID
                                 Icon(
                                     painter = painterResource(id = classify.iconResId),
                                     contentDescription = classify.name,
@@ -343,6 +361,8 @@ fun ClassificationIcon(uiState: ClassifyUiState){
                                 )
                             }
                             Spacer(modifier = Modifier.height(4.dp))
+
+                            //图标标题
                             Text(
                                 text = classify.name,
                                 fontSize = 14.sp,
