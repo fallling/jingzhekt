@@ -4,6 +4,7 @@ import com.leng.jingzhekt.Entity.Bill
 import com.leng.jingzhekt.Entity.BillType
 import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.Level
+import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.R
 import com.leng.jingzhekt.data.local.dao.BillDao
 import com.leng.jingzhekt.data.local.dao.ClassifyDao
@@ -37,27 +38,27 @@ class DatabasePopulator @Inject constructor(
     private suspend fun insertDefaultClassifies() {
         val defaultClassifies = listOf(
             // 主要支出分类
-            Classify.create("餐饮", R.drawable.icon_food, Level.Major),
-            Classify.create("购物", R.drawable.icon_shopping, Level.Major),
-            Classify.create("交通", R.drawable.icon_traffic, Level.Major),
-            Classify.create("娱乐", R.drawable.icon_entertainment, Level.Major),
-            Classify.create("医疗", R.drawable.icon_medicine, Level.Major),
-            Classify.create("教育", R.drawable.icon_study, Level.Major),
-            Classify.create("住房", R.drawable.icon_houserent, Level.Major),
+            Classify.create("餐饮", R.drawable.icon_food, Level.Major, Type.Expend),
+            Classify.create("购物", R.drawable.icon_shopping, Level.Major,Type.Expend),
+            Classify.create("交通", R.drawable.icon_traffic, Level.Major,Type.Expend),
+            Classify.create("娱乐", R.drawable.icon_entertainment, Level.Major,Type.Expend),
+            Classify.create("医疗", R.drawable.icon_medicine, Level.Major,Type.Expend),
+            Classify.create("教育", R.drawable.icon_study, Level.Major,Type.Expend),
+            Classify.create("住房", R.drawable.icon_houserent, Level.Major,Type.Expend),
             
             // 主要收入分类
-            Classify.create("工资", R.drawable.icon_salary, Level.Major),
-            Classify.create("奖金", R.drawable.icon_winning, Level.Major),
-            Classify.create("投资", R.drawable.icon_investment, Level.Major),
+            Classify.create("工资", R.drawable.icon_salary, Level.Major,Type.Income),
+            Classify.create("奖金", R.drawable.icon_winning, Level.Major,Type.Income),
+            Classify.create("投资", R.drawable.icon_investment, Level.Major,Type.Income),
             
             // 次要分类
-            Classify.create("早餐", R.drawable.icon_food, Level.Minor),
-            Classify.create("午餐", R.drawable.icon_food, Level.Minor),
-            Classify.create("晚餐", R.drawable.icon_food, Level.Minor),
-            Classify.create("服装", R.drawable.icon_shopping, Level.Minor),
-            Classify.create("日用品", R.drawable.icon_daily, Level.Minor),
-            Classify.create("公交", R.drawable.icon_traffic, Level.Minor),
-            Classify.create("打车", R.drawable.icon_traffic, Level.Minor)
+            Classify.create("早餐", R.drawable.icon_food, Level.Minor,Type.Expend),
+            Classify.create("午餐", R.drawable.icon_food, Level.Minor,Type.Expend),
+            Classify.create("晚餐", R.drawable.icon_food, Level.Minor,Type.Expend),
+            Classify.create("服装", R.drawable.icon_shopping, Level.Minor,Type.Expend),
+            Classify.create("日用品", R.drawable.icon_daily, Level.Minor,Type.Expend),
+            Classify.create("公交", R.drawable.icon_traffic, Level.Minor,Type.Expend),
+            Classify.create("打车", R.drawable.icon_traffic, Level.Minor,Type.Expend)
         )
         
         defaultClassifies.forEach { classify ->

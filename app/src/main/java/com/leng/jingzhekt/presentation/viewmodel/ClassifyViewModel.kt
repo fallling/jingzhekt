@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.leng.jingzhekt.Entity.Bill
 import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.MonthlyBill
+import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.domain.repository.ClassifyRepository
 import com.leng.jingzhekt.domain.usecase.ClassifyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +29,7 @@ class ClassifyViewModel @Inject constructor(
     fun setUiState(state: ClassifyUiState) {
         _uiState.value = state
     }
-    fun loadAllClassifyList(){
+    fun loadAllClassifyList(type: Type){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
@@ -46,8 +47,6 @@ class ClassifyViewModel @Inject constructor(
                 )
             }
         }
-
-        Log.d("lengzq", "123123123123" + _uiState.value.classifies)
     }
 }
 

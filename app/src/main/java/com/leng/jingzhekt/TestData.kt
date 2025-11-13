@@ -6,6 +6,7 @@ import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.DailyBill
 import com.leng.jingzhekt.Entity.Level
 import com.leng.jingzhekt.Entity.MonthlyBill
+import com.leng.jingzhekt.Entity.Type
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -13,17 +14,18 @@ import java.time.YearMonth
 class TestData {
 
     companion object{
-        val classify_transport = Classify.create("交通", R.drawable.directions_bus_24px , Level.Major)
-        val classify_gift = Classify.create("礼物", R.drawable.featured_seasonal_and_gifts_24px , Level.Major)
-        val classify_catering = Classify.create("餐饮", R.drawable.fork_spoon_24px , Level.Major)
-        val classify_snacks = Classify.create("零食", R.drawable.icecream_24px , Level.Major)
-        val classify_clothing = Classify.create("衣服", R.drawable.laundry_24px , Level.Major)
-        val classify_beverage = Classify.create("饮料", R.drawable.local_bar_24px , Level.Major)
-        val classify_Housing = Classify.create("住房", R.drawable.other_houses_24px , Level.Major)
-        val classify_others = Classify.create("其他", R.drawable.pending_24px , Level.Major)
-        val classify_communication = Classify.create("通讯", R.drawable.perm_phone_msg_24px , Level.Major)
-        val classify_chart = Classify.create("购物", R.drawable.shopping_cart_24px , Level.Major)
-        val classify_entertainment = Classify.create("娱乐", R.drawable.theaters_24px , Level.Major)
+        val classify_transport = Classify.create("交通", R.drawable.directions_bus_24px , Level.Major,
+            Type.Expend)
+        val classify_gift = Classify.create("礼物", R.drawable.featured_seasonal_and_gifts_24px , Level.Major,Type.Expend)
+        val classify_catering = Classify.create("餐饮", R.drawable.fork_spoon_24px , Level.Major,Type.Expend)
+        val classify_snacks = Classify.create("零食", R.drawable.icecream_24px , Level.Major,Type.Expend)
+        val classify_clothing = Classify.create("衣服", R.drawable.laundry_24px , Level.Major,Type.Expend)
+        val classify_beverage = Classify.create("饮料", R.drawable.local_bar_24px , Level.Major,Type.Expend)
+        val classify_Housing = Classify.create("住房", R.drawable.other_houses_24px , Level.Major,Type.Expend)
+        val classify_others = Classify.create("其他", R.drawable.pending_24px , Level.Major,Type.Expend)
+        val classify_communication = Classify.create("通讯", R.drawable.perm_phone_msg_24px , Level.Major,Type.Expend)
+        val classify_chart = Classify.create("购物", R.drawable.shopping_cart_24px , Level.Major,Type.Expend)
+        val classify_entertainment = Classify.create("娱乐", R.drawable.theaters_24px , Level.Major,Type.Expend)
 
 
         val bill1 = Bill.create(classify_transport.id, BillType.EXPEND, LocalDateTime.now().minusDays(3), 151.0f,"公交车")

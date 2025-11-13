@@ -7,20 +7,26 @@ enum class Level {
     Major, Minor
 }
 
+enum class Type {
+    Income, Expend
+}
+
 @Entity(tableName = "classify")
 data class Classify(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,
     val iconResId: Int,
-    val level: Level
+    val level: Level,
+    val type:Type
 ) {
     companion object {
-        fun create(name: String, iconResId: Int, level: Level): Classify {
+        fun create(name: String, iconResId: Int, level: Level, type: Type): Classify {
             return Classify(
                 name = name,
                 iconResId = iconResId,
-                level = level
+                level = level,
+                type = type
             )
         }
     }

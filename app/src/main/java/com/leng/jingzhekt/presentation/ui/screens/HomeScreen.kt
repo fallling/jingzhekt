@@ -42,6 +42,7 @@ import com.leng.jingzhekt.Entity.Bill
 import com.leng.jingzhekt.Entity.BillType
 import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.Level
+import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.R
 import com.leng.jingzhekt.presentation.ui.theme.AppTheme
 import com.leng.jingzhekt.presentation.viewmodel.HomeUiState
@@ -375,13 +376,15 @@ fun HomeScreenPreview() {
                 id = 1,
                 name = "餐饮",
                 iconResId = com.leng.jingzhekt.R.drawable.fork_spoon_24px,
-                level = Level.Major
+                level = Level.Major,
+                type = Type.Expend
             ),
             Classify(
                 id = 2,
                 name = "工资",
                 iconResId = com.leng.jingzhekt.R.drawable.chart,
-                level = Level.Major
+                level = Level.Major,
+                type = Type.Expend
             )
         )
 

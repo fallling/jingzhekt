@@ -24,12 +24,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -40,12 +43,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,49 +55,59 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.Level
+import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.R
 import com.leng.jingzhekt.presentation.viewmodel.ClassifyUiState
 import com.leng.jingzhekt.presentation.viewmodel.ClassifyViewModel
 import com.leng.jingzhekt.ui.components.Keyboard
 
 // 为 Preview 提供示例数据
-private fun getSampleClassifies(): List<Classify> {
-    return listOf(
-        // 主要支出分类
-        Classify.create("餐饮", R.drawable.icon_food, Level.Major),
-        Classify.create("购物", R.drawable.icon_shopping, Level.Major),
-        Classify.create("交通", R.drawable.icon_traffic, Level.Major),
-        Classify.create("娱乐", R.drawable.icon_entertainment, Level.Major),
-        Classify.create("医疗", R.drawable.icon_medicine, Level.Major),
-        Classify.create("教育", R.drawable.icon_study, Level.Major),
-        Classify.create("住房", R.drawable.icon_houserent, Level.Major),
+private fun getSampleClassifies(type: Type): List<Classify> {
+    if(type == Type.Expend){
+        return listOf(
+            // 主要支出分类
+            Classify.create("餐饮", R.drawable.icon_food, Level.Major, Type.Expend),
+            Classify.create("购物", R.drawable.icon_shopping, Level.Major,Type.Expend),
+            Classify.create("交通", R.drawable.icon_traffic, Level.Major,Type.Expend),
+            Classify.create("娱乐", R.drawable.icon_entertainment, Level.Major,Type.Expend),
+            Classify.create("医疗", R.drawable.icon_medicine, Level.Major,Type.Expend),
+            Classify.create("教育", R.drawable.icon_study, Level.Major,Type.Expend),
+            Classify.create("住房", R.drawable.icon_houserent, Level.Major,Type.Expend),
 
-        // 主要收入分类
-        Classify.create("工资", R.drawable.icon_salary, Level.Major),
-        Classify.create("奖金", R.drawable.icon_winning, Level.Major),
-        Classify.create("投资", R.drawable.icon_investment, Level.Major),
-
-        // 次要分类
-        Classify.create("早餐", R.drawable.icon_food, Level.Minor),
-        Classify.create("午餐", R.drawable.icon_food, Level.Minor),
-        Classify.create("晚餐", R.drawable.icon_food, Level.Minor),
-        Classify.create("服装", R.drawable.icon_shopping, Level.Minor),
-        Classify.create("日用",R.drawable.icon_daily, Level.Minor),
-        Classify.create("公交", R.drawable.icon_traffic, Level.Minor),
-        Classify.create("打车", R.drawable.icon_traffic, Level.Minor)
-    )
+            // 次要分类
+            Classify.create("早餐", R.drawable.icon_food, Level.Minor,Type.Expend),
+            Classify.create("午餐", R.drawable.icon_food, Level.Minor,Type.Expend),
+            Classify.create("晚餐", R.drawable.icon_food, Level.Minor,Type.Expend),
+            Classify.create("服装", R.drawable.icon_shopping, Level.Minor,Type.Expend),
+            Classify.create("日用品", R.drawable.icon_daily, Level.Minor,Type.Expend),
+            Classify.create("公交", R.drawable.icon_traffic, Level.Minor,Type.Expend),
+            Classify.create("打车", R.drawable.icon_traffic, Level.Minor,Type.Expend))
+    }else{
+        return listOf(
+            // 主要收入分类
+            Classify.create("工资", R.drawable.icon_salary, Level.Major,Type.Income),
+            Classify.create("奖金", R.drawable.icon_winning, Level.Major,Type.Income),
+            Classify.create("投资", R.drawable.icon_investment, Level.Major,Type.Income))
+    }
 }
 
 @Composable
 @Preview(name = "正常状态")
 fun BillClassificationPreview(){
+    var tab by remember { mutableStateOf(Type.Expend) }
     BillClassificationContent(
         uiState = ClassifyUiState(
-            classifies = getSampleClassifies(),
-            isLoading = false
-        )
+            classifies = getSampleClassifies(type =tab ),
+            isLoading = false,
+        ),
+        onTabChanged = { type ->
+            tab = type
+        }
     )
 }
 
@@ -127,34 +138,46 @@ fun BillClassification(
     classifyViewModel: ClassifyViewModel = hiltViewModel()
 ) {
     val uiState by classifyViewModel.uiState.collectAsStateWithLifecycle()
+    var tab by remember { mutableStateOf(Type.Expend) }
 
     LaunchedEffect(Unit) {
-        classifyViewModel.loadAllClassifyList()
+        classifyViewModel.loadAllClassifyList(tab)
     }
 
-    BillClassificationContent(uiState = uiState)
+    BillClassificationContent(uiState = uiState, onTabChanged = {type ->
+        tab = type
+    })
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BillClassificationContent(
-    uiState: ClassifyUiState
+    uiState: ClassifyUiState,
+    onTabChanged: (Type) -> Unit = {}
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("支出", "收入")
 
+    //顶部tab选项
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabs = listOf(Type.Expend, Type.Income)
+    val navController = rememberNavController()
+    
+    // Type 到中文名称的映射
+    val typeToChineseName = mapOf(
+        Type.Expend to "支出",
+        Type.Income to "收入"
+    )
+
+    // 输入键盘焦点
     var mountInputState by remember { mutableStateOf(false)}
     val focusManager = LocalFocusManager.current
 
+    //图标选项
     var selectedCategory by remember { mutableIntStateOf(0) }
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
-        Box(modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF4F4F4))
-        ) {
+        Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF4F4F4))) {
             if (mountInputState) {
                 Box(
                     modifier = Modifier
@@ -173,106 +196,42 @@ fun BillClassificationContent(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                // 顶部Tab
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                PrimaryTabRow(
+                    modifier = Modifier.background(Color.Transparent),
+                    selectedTabIndex = selectedTab
                 ) {
                     tabs.forEachIndexed { index, tab ->
-                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                            Text(
-                                text = tab,
-                                fontSize = 20.sp,
-                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTab == index) Color.Black else Color.Gray,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .clickable { selectedTab = index }
-                            )
-                        }
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = {
+                                selectedTab = index
+                                navController.navigate(tab.name) {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                                onTabChanged(tab)
+                            },
+                            text = {
+                                Text(text = tab.name, fontSize = 20.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                            }
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // 加载状态或分类网格
-                if (uiState.isLoading) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                } else if (uiState.classifies.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "暂无分类数据",
-                            color = Color.Gray,
-                            fontSize = 16.sp
-                        )
-                    }
-                } else {
-                    // 分类网格
-                    val colCount = 5
-                    val gridItems = uiState.classifies.size
-                for (row in 0 until (gridItems + colCount - 1) / colCount) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        for (col in 0 until colCount) {
-                            val index = row * colCount + col
-                            if (index < uiState.classifies.size) {
-                                val classify = uiState.classifies[index]
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                        .clickable { selectedCategory = index }
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp)
-                                            .background(
-                                                if (selectedCategory == index) Color(0xFFB2D7F5) else Color(
-                                                    0xFFF2F2F2
-                                                ),
-                                                shape = CircleShape
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        // 使用分类的图标资源ID或默认emoji
-                                        Icon(
-                                            //imageVector = ImageVector.vectorResource(classify.iconResId)
-                                            painterResource(2131165440)
-                                            ,
-                                            contentDescription = "餐饮",
-                                            modifier = Modifier.size(48.dp),
-                                            tint = Color.Unspecified // 保持原始颜色
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = classify.name,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
-                                }
-                            } else {
-                                Spacer(modifier = Modifier.size(56.dp))
+                NavHost(
+                    navController = navController, 
+                    startDestination = Type.Expend.name
+                ) {
+                    tabs.forEachIndexed { index, type ->
+                        composable(type.name) {
+                            //分类图标列表
+                            Column {
+                                ClassificationIcon(uiState)
                             }
                         }
                     }
                 }
-                } // 结束分类网格的 else 块
-
             }
             
             val density = LocalDensity.current
@@ -285,7 +244,7 @@ fun BillClassificationContent(
                     .align(Alignment.BottomCenter)
                     .zIndex(100f)
                     .onGloballyPositioned { layoutCoordinates ->
-                        keyboardHeight.value = layoutCoordinates.size.height.toFloat()
+                        keyboardHeight.floatValue = layoutCoordinates.size.height.toFloat()
                     }
             )
             
@@ -298,12 +257,12 @@ fun BillClassificationContent(
                     .offset(
                         x = 0.dp,
                         y = with(density) { 
-                            if (imeHeight > keyboardHeight.value.toDp()) {
+                            if (imeHeight > keyboardHeight.floatValue.toDp()) {
                                 // 系统键盘弹出时：向上偏移 = 自定义键盘高度 + 系统键盘高度 + 间距
                                 -( imeHeight + 8.dp)
                             } else {
                                 // 系统键盘未弹出时：向上偏移 = 自定义键盘高度 + 间距
-                                -(keyboardHeight.value.toDp() + 8.dp)
+                                -(keyboardHeight.floatValue.toDp() + 8.dp)
                             }
                         }
                     )
@@ -315,6 +274,87 @@ fun BillClassificationContent(
                     }
                 }
             )
+        }
+    }
+}
+
+
+@Composable
+fun ClassificationIcon(uiState: ClassifyUiState){
+    var selectedCategory by remember { mutableIntStateOf(0) }
+    // 加载状态或分类网格
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else if (uiState.classifies.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "暂无分类数据",
+                color = Color.Gray,
+                fontSize = 16.sp
+            )
+        }
+    } else {
+        // 分类网格
+        val colCount = 5
+        val gridItems = uiState.classifies.size
+        Column {
+        for (row in 0 until (gridItems + colCount - 1) / colCount) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                for (col in 0 until colCount) {
+                    val index = row * colCount + col
+                    if (index < uiState.classifies.size) {
+                        val classify = uiState.classifies[index]
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .clickable { selectedCategory = index }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .background(
+                                        if (selectedCategory == index) Color(0xFFB2D7F5) else Color(
+                                            0xFFF2F2F2
+                                        ),
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // 使用分类的图标资源ID
+                                Icon(
+                                    painter = painterResource(id = classify.iconResId),
+                                    contentDescription = classify.name,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = Color.Unspecified // 保持原始颜色
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = classify.name,
+                                fontSize = 14.sp,
+                                color = Color.Black
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.size(56.dp))
+                    }
+                }
+            }
+        }
         }
     }
 }

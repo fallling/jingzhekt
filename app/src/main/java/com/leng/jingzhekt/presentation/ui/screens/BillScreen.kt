@@ -58,6 +58,7 @@ import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.DailyBill
 import com.leng.jingzhekt.Entity.Level
 import com.leng.jingzhekt.Entity.MonthlyBill
+import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.R
 import com.leng.jingzhekt.presentation.viewmodel.BillViewModel
 import com.leng.jingzhekt.ui.components.CalendarCard
@@ -80,13 +81,13 @@ fun BillScreenPreview() {
         CompositionLocalProvider(LocalIsPreview provides true) {
             // 创建模拟的分类数据
             val mockClassifies = listOf(
-                Classify.create("交通", R.drawable.directions_bus_24px, Level.Major),
-                Classify.create("礼物", R.drawable.featured_seasonal_and_gifts_24px, Level.Major),
-                Classify.create("餐饮", R.drawable.fork_spoon_24px, Level.Major),
-                Classify.create("零食", R.drawable.icecream_24px, Level.Major),
-                Classify.create("通讯", R.drawable.perm_phone_msg_24px, Level.Major)
+                Classify.create("交通", R.drawable.directions_bus_24px, Level.Major, Type.Expend),
+                Classify.create("礼物", R.drawable.featured_seasonal_and_gifts_24px, Level.Major,Type.Expend),
+                Classify.create("餐饮", R.drawable.fork_spoon_24px, Level.Major,Type.Expend),
+                Classify.create("零食", R.drawable.icecream_24px, Level.Major,Type.Expend),
+                Classify.create("通讯", R.drawable.perm_phone_msg_24px, Level.Major,Type.Expend)
             )
-            
+
             // 创建模拟的月账单数据
             val mockMonthlyBill = createMockMonthlyBill()
             
@@ -106,8 +107,8 @@ fun BillItemPreview() {
         CompositionLocalProvider(LocalIsPreview provides true) {
             // 创建模拟的分类数据
             val mockClassifies = listOf(
-                Classify.create("交通", R.drawable.directions_bus_24px, Level.Major),
-                Classify.create("餐饮", R.drawable.fork_spoon_24px, Level.Major)
+                Classify.create("交通", R.drawable.directions_bus_24px, Level.Major,Type.Expend),
+                Classify.create("餐饮", R.drawable.fork_spoon_24px, Level.Major,Type.Expend)
             )
             
             // 创建模拟的账单数据
