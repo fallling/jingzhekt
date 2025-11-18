@@ -1,27 +1,24 @@
 package com.leng.jingzhekt.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.leng.jingzhekt.Entity.Bill
 import com.leng.jingzhekt.Entity.Classify
-import com.leng.jingzhekt.Entity.MonthlyBill
 import com.leng.jingzhekt.Entity.Type
-import com.leng.jingzhekt.domain.repository.ClassifyRepository
 import com.leng.jingzhekt.domain.usecase.ClassifyGetByTypeUseCase
-import com.leng.jingzhekt.domain.usecase.ClassifyUseCase
+import com.leng.jingzhekt.domain.usecase.GetMinorClassifyUseCase
+import com.leng.jingzhekt.domain.usecase.getMajorClassifyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.YearMonth
 import javax.inject.Inject
-import kotlin.math.log
 
 @HiltViewModel
 class ClassifyViewModel @Inject constructor(
     private val getClassifyUseCase: ClassifyGetByTypeUseCase,
+    private val  getMajorClassify: getMajorClassifyUseCase,
+    private val getMinorClassifyUseCase: GetMinorClassifyUseCase
 ): ViewModel(){
     private val _uiState = MutableStateFlow(ClassifyUiState())
     val uiState: StateFlow<ClassifyUiState> = _uiState.asStateFlow()
@@ -30,14 +27,35 @@ class ClassifyViewModel @Inject constructor(
     fun setUiState(state: ClassifyUiState) {
         _uiState.value = state
     }
+
     fun loadAllClassifyList(type: Type){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             try {
-                getClassifyUseCase(type).collect { classifies ->
+                getMajorClassify(type).collect { classifies ->
                     _uiState.value = _uiState.value.copy(
                         classifies = classifies,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    message = "加载失败: ${e.message}"
+                )
+            }
+        }
+    }
+
+    fun loadMinorClassifyList(parentId: Int){
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            try {
+                getMinorClassifyUseCase(parentId).collect { classifies ->
+                    _uiState.value = _uiState.value.copy(
+                        minorClassifies = classifies,
                         isLoading = false
                     )
                 }
@@ -53,6 +71,7 @@ class ClassifyViewModel @Inject constructor(
 
 data class ClassifyUiState(
     val classifies: List<Classify> = emptyList(),
+    val minorClassifies: List<Classify>? = emptyList(),
     val isLoading: Boolean = false,
     val message: String? = null
 )

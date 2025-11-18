@@ -44,7 +44,6 @@ import com.leng.jingzhekt.Entity.Classify
 import com.leng.jingzhekt.Entity.Level
 import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.R
-import com.leng.jingzhekt.presentation.ui.theme.AppTheme
 import com.leng.jingzhekt.presentation.viewmodel.HomeUiState
 import com.leng.jingzhekt.presentation.viewmodel.HomeViewModel
 import com.leng.jingzhekt.ui.components.CircularIcon
@@ -377,14 +376,16 @@ fun HomeScreenPreview() {
                 name = "餐饮",
                 iconResId = com.leng.jingzhekt.R.drawable.fork_spoon_24px,
                 level = Level.Major,
-                type = Type.Expend
+                type = Type.Expend,
+                parentId = 0
             ),
             Classify(
                 id = 2,
                 name = "工资",
                 iconResId = com.leng.jingzhekt.R.drawable.chart,
                 level = Level.Major,
-                type = Type.Expend
+                type = Type.Expend,
+                parentId = 0
             )
         )
 

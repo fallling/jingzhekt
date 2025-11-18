@@ -1,6 +1,7 @@
 package com.leng.jingzhekt.data.repository
 
 import com.leng.jingzhekt.Entity.Classify
+import com.leng.jingzhekt.Entity.Level
 import com.leng.jingzhekt.Entity.Type
 import com.leng.jingzhekt.data.local.dao.ClassifyDao
 import com.leng.jingzhekt.domain.repository.ClassifyRepository
@@ -18,6 +19,11 @@ class ClassifyRepositoryImpl @Inject constructor(
     override suspend fun getClassifyById(id: Int): Classify? = classifyDao.getClassifyById(id)
 
     override fun getClassifyByType(type: Type): Flow<List<Classify>> = classifyDao.getClassifyByType(type)
+
+    override fun getClassifyByLevel(level: Level): Flow<List<Classify>> = classifyDao.getClassifyByLevel(level)
+    override fun getMajorClassify(type: Type, level: Level): Flow<List<Classify>> = classifyDao.getMajorClassify(type,level)
+
+    override fun getMinorClassify(parentId: Int): Flow<List<Classify>> = classifyDao.getMinorClassify(parentId)
 
     override suspend fun insertClassify(classify: Classify) = classifyDao.insertClassify(classify)
     

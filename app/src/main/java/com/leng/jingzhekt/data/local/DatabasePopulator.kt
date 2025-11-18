@@ -36,32 +36,61 @@ class DatabasePopulator @Inject constructor(
     }
     
     private suspend fun insertDefaultClassifies() {
-        val defaultClassifies = listOf(
+        // 先插入所有主分类
+        val majorClassifies = listOf(
             // 主要支出分类
             Classify.create("餐饮", R.drawable.icon_food, Level.Major, Type.Expend),
-            Classify.create("购物", R.drawable.icon_shopping, Level.Major,Type.Expend),
-            Classify.create("交通", R.drawable.icon_traffic, Level.Major,Type.Expend),
-            Classify.create("娱乐", R.drawable.icon_entertainment, Level.Major,Type.Expend),
-            Classify.create("医疗", R.drawable.icon_medicine, Level.Major,Type.Expend),
-            Classify.create("教育", R.drawable.icon_study, Level.Major,Type.Expend),
-            Classify.create("住房", R.drawable.icon_houserent, Level.Major,Type.Expend),
+            Classify.create("购物", R.drawable.icon_shopping, Level.Major, Type.Expend),
+            Classify.create("交通", R.drawable.icon_traffic, Level.Major, Type.Expend),
+            Classify.create("娱乐", R.drawable.icon_entertainment, Level.Major, Type.Expend),
+            Classify.create("医疗", R.drawable.icon_medicine, Level.Major, Type.Expend),
+            Classify.create("教育", R.drawable.icon_study, Level.Major, Type.Expend),
+            Classify.create("住房", R.drawable.icon_houserent, Level.Major, Type.Expend),
             
             // 主要收入分类
-            Classify.create("工资", R.drawable.icon_salary, Level.Major,Type.Income),
-            Classify.create("奖金", R.drawable.icon_winning, Level.Major,Type.Income),
-            Classify.create("投资", R.drawable.icon_investment, Level.Major,Type.Income),
-            
-            // 次要分类
-            Classify.create("早餐", R.drawable.icon_food, Level.Minor,Type.Expend),
-            Classify.create("午餐", R.drawable.icon_food, Level.Minor,Type.Expend),
-            Classify.create("晚餐", R.drawable.icon_food, Level.Minor,Type.Expend),
-            Classify.create("服装", R.drawable.icon_shopping, Level.Minor,Type.Expend),
-            Classify.create("日用品", R.drawable.icon_daily, Level.Minor,Type.Expend),
-            Classify.create("公交", R.drawable.icon_traffic, Level.Minor,Type.Expend),
-            Classify.create("打车", R.drawable.icon_traffic, Level.Minor,Type.Expend)
+            Classify.create("工资", R.drawable.icon_salary, Level.Major, Type.Income),
+            Classify.create("奖金", R.drawable.icon_winning, Level.Major, Type.Income),
+            Classify.create("投资", R.drawable.icon_investment, Level.Major, Type.Income)
         )
         
-        defaultClassifies.forEach { classify ->
+        // 插入主分类并获取生成的 id
+        majorClassifies.forEach { classify ->
+            classifyDao.insertClassify(classify)
+        }
+        
+        // 查询所有已插入的分类，建立名称到 id 的映射
+        val allClassifies = classifyDao.getAllClassifies().first()
+        val classifyMap = allClassifies.associateBy { it.name }
+        
+        // 获取主分类的 id
+        val foodId = classifyMap["餐饮"]?.id
+        val shoppingId = classifyMap["购物"]?.id
+        val trafficId = classifyMap["交通"]?.id
+        
+        // 插入子分类，使用实际的主分类 id
+        val minorClassifies = mutableListOf<Classify>()
+        
+        // 餐饮的子分类
+        foodId?.let { id ->
+            minorClassifies.add(Classify.create("早餐", R.drawable.icon_food, Level.Minor, Type.Expend, parentId = id))
+            minorClassifies.add(Classify.create("午餐", R.drawable.icon_food, Level.Minor, Type.Expend, parentId = id))
+            minorClassifies.add(Classify.create("晚餐", R.drawable.icon_food, Level.Minor, Type.Expend, parentId = id))
+        }
+        
+        // 购物的子分类
+        shoppingId?.let { id ->
+            minorClassifies.add(Classify.create("服装", R.drawable.icon_shopping, Level.Minor, Type.Expend, parentId = id))
+            minorClassifies.add(Classify.create("日用品", R.drawable.icon_daily, Level.Minor, Type.Expend, parentId = id))
+        }
+        
+        // 交通的子分类
+        trafficId?.let { id ->
+            minorClassifies.add(Classify.create("公交", R.drawable.icon_traffic, Level.Minor, Type.Expend, parentId = id))
+            minorClassifies.add(Classify.create("打车", R.drawable.icon_traffic, Level.Minor, Type.Expend, parentId = id))
+        }
+        
+        // 插入所有子分类
+        minorClassifies.forEach { classify ->
             classifyDao.insertClassify(classify)
         }
     }
