@@ -30,18 +30,18 @@ class ClassifyViewModel @Inject constructor(
 
     fun loadAllClassifyList(type: Type){
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoadingMajor = true)
 
             try {
                 getMajorClassify(type).collect { classifies ->
                     _uiState.value = _uiState.value.copy(
                         classifies = classifies,
-                        isLoading = false
+                        isLoadingMajor = false
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    isLoadingMajor = false,
                     message = "加载失败: ${e.message}"
                 )
             }
@@ -50,18 +50,18 @@ class ClassifyViewModel @Inject constructor(
 
     fun loadMinorClassifyList(parentId: Int){
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoadingMinor = true)
 
             try {
                 getMinorClassifyUseCase(parentId).collect { classifies ->
                     _uiState.value = _uiState.value.copy(
                         minorClassifies = classifies,
-                        isLoading = false
+                        isLoadingMinor = false
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    isLoadingMinor = false,
                     message = "加载失败: ${e.message}"
                 )
             }
@@ -72,6 +72,7 @@ class ClassifyViewModel @Inject constructor(
 data class ClassifyUiState(
     val classifies: List<Classify> = emptyList(),
     val minorClassifies: List<Classify>? = emptyList(),
-    val isLoading: Boolean = false,
+    val isLoadingMajor: Boolean = false,
+    val isLoadingMinor: Boolean = false,
     val message: String? = null
 )

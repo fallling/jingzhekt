@@ -37,11 +37,13 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -50,6 +52,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -69,6 +72,7 @@ import com.leng.jingzhekt.R
 import com.leng.jingzhekt.presentation.viewmodel.ClassifyUiState
 import com.leng.jingzhekt.presentation.viewmodel.ClassifyViewModel
 import com.leng.jingzhekt.ui.components.Keyboard
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 // 为 Preview 提供示例数据
 private fun getSampleClassifies(type: Type): List<Classify> {
@@ -124,12 +128,12 @@ fun BillClassificationPreview() {
             selectedCategory = classify
         },
         onSelectedMinorCategory = { classify ->
-            // Preview 中的处理
+
         },
         uiState = ClassifyUiState(
             classifies = getSampleClassifies(type = tab),
             minorClassifies = selectedCategory?.let { getMinorClassifies(it.name) },
-            isLoading = false,
+            isLoadingMajor = false,
         ),
     )
 }
@@ -140,7 +144,7 @@ fun BillClassificationLoadingPreview() {
     BillClassificationContent(
         uiState = ClassifyUiState(
             classifies = emptyList(),
-            isLoading = true
+            isLoadingMajor = true
         )
     )
 }
@@ -151,7 +155,7 @@ fun BillClassificationEmptyPreview() {
     BillClassificationContent(
         uiState = ClassifyUiState(
             classifies = emptyList(),
-            isLoading = false
+            isLoadingMajor = false
         )
     )
 }
@@ -162,14 +166,26 @@ fun BillClassification(
 ) {
     val uiState by classifyViewModel.uiState.collectAsStateWithLifecycle()
     var tab by remember { mutableStateOf(Type.Expend) }
-    var selectedMajorClassify by remember { mutableStateOf<Classify?>(null) }
-    var selectedMinorClassify by remember { mutableStateOf<Classify?>(null) }
 
-    // 当 tab 切换时，重新加载分类列表并清空选中状态
-    LaunchedEffect(tab) {
-        classifyViewModel.loadAllClassifyList(tab)
-        selectedMajorClassify = null
-        selectedMinorClassify = null
+    var selectedClassify by remember {
+        mutableStateOf(
+            Classify.create(
+                "餐饮",
+                R.drawable.icon_food,
+                Level.Major,
+                Type.Expend
+            )
+        )
+    }
+
+    // 当 tab 切换时，重新加载分类列表
+    LaunchedEffect(Unit) {
+        snapshotFlow { tab }.distinctUntilChanged().collect {
+            classifyViewModel.loadAllClassifyList(it)
+        }
+    }
+    LaunchedEffect(selectedClassify) {
+        Log.d("lengzq", "selected classify $selectedClassify")
     }
 
     BillClassificationContent(
@@ -179,7 +195,7 @@ fun BillClassification(
             Log.d("lengzq", "BillClassification:  ${type.name}")
         },
         onSelectedCategory = { classify ->
-            selectedMajorClassify = classify
+            selectedClassify = classify
             // 加载子分类
             if (classify.id > 0) {
                 classifyViewModel.loadMinorClassifyList(classify.id)
@@ -187,9 +203,8 @@ fun BillClassification(
             Log.d("lengzq", "BillClassification: 选中主分类 ${classify.name}, id=${classify.id}")
         },
         onSelectedMinorCategory = { classify ->
-            selectedMinorClassify = classify
+            selectedClassify = classify
             Log.d("lengzq", "BillClassification: 选中子分类 ${classify.name}, id=${classify.id}")
-            // TODO: 这里可以触发账单创建或其他业务逻辑
         }
     )
 }
@@ -221,13 +236,13 @@ fun BillClassificationContent(
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
-
-        //遮罩
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFF4F4F4))
         ) {
+
+            //遮罩
             if (mountInputState) {
                 Box(
                     modifier = Modifier
@@ -241,6 +256,7 @@ fun BillClassificationContent(
                 )
             }
 
+            //内容
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -248,7 +264,7 @@ fun BillClassificationContent(
             ) {
 
                 var interactionSource = remember { MutableInteractionSource() }
-
+                // toolbar
                 TabRow(
                     modifier = Modifier.clickable(
                         interactionSource = interactionSource,
@@ -288,7 +304,7 @@ fun BillClassificationContent(
                             verticalArrangement = Arrangement.Center,
                             content = {
                                 Text(
-                                    text = tab.name,
+                                    text = stringResource(getTabString(tab)),
                                     fontSize = 20.sp,
                                     color = if (selectedTab == index) Color.Black else Color.Gray,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -299,6 +315,8 @@ fun BillClassificationContent(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                //分类图标
                 NavHost(
                     navController = navController,
                     startDestination = Type.Expend.name
@@ -330,7 +348,6 @@ fun BillClassificationContent(
             Keyboard(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .zIndex(100f)
                     .onGloballyPositioned { layoutCoordinates ->
                         keyboardHeight.floatValue = layoutCoordinates.size.height.toFloat()
                     }
@@ -376,20 +393,20 @@ fun ClassificationIcon(
 ) {
     var selectedCategoryIndex by remember { mutableIntStateOf(-1) }
     var selectedMinorCategoryIndex by remember { mutableIntStateOf(-1) }
-    
+
     // 当分类列表变化时，重置选中状态
     LaunchedEffect(uiState.classifies) {
         if (selectedCategoryIndex >= uiState.classifies.size) {
             selectedCategoryIndex = -1
         }
     }
-    
+
     // 当子分类列表变化时，重置子分类选中状态
     LaunchedEffect(uiState.minorClassifies) {
         selectedMinorCategoryIndex = -1
     }
     // 加载状态或分类网格
-    if (uiState.isLoading) {
+    if (uiState.isLoadingMajor) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -472,69 +489,111 @@ fun ClassificationIcon(
                 }
 
                 //显示子分类 - 当选中主分类时显示其子分类
-                if (selectedCategoryIndex >= 0 && 
-                    row == (selectedCategoryIndex / colCount) && 
-                    !uiState.minorClassifies.isNullOrEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .padding(18.dp, 0.dp)
-                            .background(color = Color.White, shape = RoundedCornerShape(12.dp))
-                    ) {
-                        val colCount = 5
-                        val gridItems = uiState.minorClassifies.size
-                        Column {
-                            for (row in 0 until (gridItems + colCount - 1) / colCount) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                                    horizontalArrangement = Arrangement.SpaceEvenly
-                                ) {
-                                    for (col in 0 until colCount) {
-                                        val index = row * colCount + col
-                                        if (index < uiState.minorClassifies.size) {
-                                            val classify = uiState.minorClassifies[index]
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                modifier = Modifier
-                                                    .padding(4.dp)
-                                                    .clickable {
-                                                        selectedMinorCategoryIndex = index
-                                                        onSelectedMinorCategoryChanged(classify)
-                                                    }
-                                            ) {
-                                                //显示图标
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(40.dp)
-                                                        .background(
-                                                            color = if (selectedMinorCategoryIndex == index) Color(
-                                                                0xFFB2D7F5
-                                                            ) else Color(0xFFF2F2F2),
-                                                            shape = CircleShape
-                                                        ),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        modifier = Modifier.size(36.dp),
-                                                        painter = painterResource(id = classify.iconResId),
-                                                        contentDescription = classify.name,
-                                                        tint = Color.Unspecified // 保持原始颜色
-                                                    )
-                                                }
-                                                Spacer(modifier = Modifier.height(4.dp))
+                if (selectedCategoryIndex >= 0 && row == (selectedCategoryIndex / colCount)) {
+                    key(selectedCategoryIndex) {
+                        MinorClassifyGrid(
+                            minorClassifies = uiState.minorClassifies,
+                            isLoadingMinor = uiState.isLoadingMinor,
+                            selectedMinorCategoryIndex = selectedMinorCategoryIndex,
+                            onSelectedMinorCategoryChanged = { index, classify ->
+                                selectedMinorCategoryIndex = index
+                                onSelectedMinorCategoryChanged(classify)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
-                                                //图标标题
-                                                Text(
-                                                    text = classify.name,
-                                                    fontSize = 14.sp,
-                                                    color = Color.Black
-                                                )
+@Composable
+private fun MinorClassifyGrid(
+    minorClassifies: List<Classify>?,
+    isLoadingMinor: Boolean,
+    selectedMinorCategoryIndex: Int,
+    onSelectedMinorCategoryChanged: (Int, Classify) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .padding(18.dp, 0.dp)
+            .background(color = Color.White, shape = RoundedCornerShape(12.dp))
+    ) {
+        when {
+            isLoadingMinor -> {
+                // 子分类加载中，只显示加载指示器，不影响主分类
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+            }
+
+            minorClassifies.isNullOrEmpty() -> {
+                // 没有子分类，不显示任何内容
+                Spacer(modifier = Modifier.height(0.dp))
+            }
+
+            else -> {
+                // 显示子分类网格
+                val colCount = 5
+                val gridItems = minorClassifies.size
+                Column {
+                    for (row in 0 until (gridItems + colCount - 1) / colCount) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            for (col in 0 until colCount) {
+                                val index = row * colCount + col
+                                if (index < minorClassifies.size) {
+                                    val classify = minorClassifies[index]
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier
+                                            .padding(4.dp)
+                                            .clickable {
+                                                onSelectedMinorCategoryChanged(index, classify)
                                             }
-                                        } else {
-                                            Spacer(modifier = Modifier.size(56.dp))
+                                    ) {
+                                        //显示图标
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .background(
+                                                    color = if (selectedMinorCategoryIndex == index) Color(
+                                                        0xFFB2D7F5
+                                                    ) else Color(0xFFF2F2F2),
+                                                    shape = CircleShape
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier.size(36.dp),
+                                                painter = painterResource(id = classify.iconResId),
+                                                contentDescription = classify.name,
+                                                tint = Color.Unspecified // 保持原始颜色
+                                            )
                                         }
+                                        Spacer(modifier = Modifier.height(4.dp))
+
+                                        //图标标题
+                                        Text(
+                                            text = classify.name,
+                                            fontSize = 14.sp,
+                                            color = Color.Black
+                                        )
                                     }
+                                } else {
+                                    Spacer(modifier = Modifier.size(40.dp))
                                 }
                             }
                         }
@@ -543,89 +602,96 @@ fun ClassificationIcon(
             }
         }
     }
-    }
+}
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun KeyBoardInputView(
-        modifier: Modifier,
-        onMountStateChange: (Boolean) -> Unit
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun KeyBoardInputView(
+    modifier: Modifier,
+    onMountStateChange: (Boolean) -> Unit
+) {
+    var remark by remember { mutableStateOf(TextFieldValue("")) }
+    var amount by remember { mutableStateOf("0.00") }
+    val focusManager = LocalFocusManager.current
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
     ) {
-        var remark by remember { mutableStateOf(TextFieldValue("")) }
-        var amount by remember { mutableStateOf("0.00") }
-        val focusManager = LocalFocusManager.current
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
+        // 备注和金额
+        Card(
+            modifier = Modifier
+                .padding(8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.onTertiary
+            )
         ) {
-            // 备注和金额
-            Card(
+            Row(
                 modifier = Modifier
-                    .padding(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.onTertiary
-                )
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
+                TextField(
+                    value = remark,
+                    onValueChange = { remark = it },
+                    placeholder = { Text("点击填写备注…") },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextField(
-                        value = remark,
-                        onValueChange = { remark = it },
-                        placeholder = { Text("点击填写备注…") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .onFocusChanged { state ->
-                                onMountStateChange(state.isFocused)
-                            },
-                        shape = RoundedCornerShape(16.dp),
-                        singleLine = true,
-                        keyboardActions = KeyboardActions(onDone = {
-                            Log.d("lengzq", "KeyBoardInputView: 123123123")
-                            onMountStateChange(false)
-                        }),
-                        trailingIcon = {
-                            Text(
-                                modifier = Modifier.clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    onMountStateChange(false)
-                                },
-                                text = "￥$amount",
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
+                        .weight(1f)
+                        .onFocusChanged { state ->
+                            onMountStateChange(state.isFocused)
                         },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
-                        )
-                    )
-                }
-
-                // 日期、账户等标签
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf("今天", "默认账本", "资产账户", "图片", "不报销").forEach {
+                    shape = RoundedCornerShape(16.dp),
+                    singleLine = true,
+                    keyboardActions = KeyboardActions(onDone = {
+                        Log.d("lengzq", "KeyBoardInputView: 123123123")
+                        onMountStateChange(false)
+                    }),
+                    trailingIcon = {
                         Text(
-                            text = it,
-                            color = Color(0xFF7BB6F7),
-                            fontSize = 14.sp,
-                            modifier = Modifier
-                                .background(Color(0x1A7BB6F7), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                            modifier = Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                onMountStateChange(false)
+                            },
+                            text = "￥$amount",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
                         )
-                    }
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    )
+                )
+            }
+
+            // 日期、账户等标签
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf("今天", "默认账本", "资产账户", "图片", "不报销").forEach {
+                    Text(
+                        text = it,
+                        color = Color(0xFF7BB6F7),
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .background(Color(0x1A7BB6F7), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
                 }
             }
         }
     }
+}
+
+fun getTabString(type: Type): Int {
+    return when(type){
+        Type.Expend -> R.string.title_expend
+        Type.Income -> R.string.title_income
+    }
+}
