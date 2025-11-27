@@ -223,6 +223,8 @@ fun BillClassificationContent(
     val tabs = listOf(Type.Expend, Type.Income)
     val navController = rememberNavController()
 
+    var amount by remember { mutableStateOf("0.0") }
+
     // Type 到中文名称的映射
     val typeToChineseName = mapOf(
         Type.Expend to "支出",
@@ -345,12 +347,16 @@ fun BillClassificationContent(
             val imeInsets = WindowInsets.ime
             val imeHeight = with(density) { imeInsets.getBottom(density).toDp() }
 
+            //键盘
             Keyboard(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .onGloballyPositioned { layoutCoordinates ->
                         keyboardHeight.floatValue = layoutCoordinates.size.height.toFloat()
-                    }
+                    },
+                onKeyPressed = { key ->
+                    amount += key
+                }
             )
 
 
@@ -378,7 +384,8 @@ fun BillClassificationContent(
                     if (!state) {
                         focusManager.clearFocus()
                     }
-                }
+                },
+                amount = amount
             )
         }
     }
@@ -608,10 +615,11 @@ private fun MinorClassifyGrid(
 @Composable
 fun KeyBoardInputView(
     modifier: Modifier,
-    onMountStateChange: (Boolean) -> Unit
+    onMountStateChange: (Boolean) -> Unit,
+    amount: String
 ) {
     var remark by remember { mutableStateOf(TextFieldValue("")) }
-    var amount by remember { mutableStateOf("0.00") }
+    //var amount by remember { mutableStateOf("0.00") }
     val focusManager = LocalFocusManager.current
     Column(
         modifier = modifier

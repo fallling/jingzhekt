@@ -17,10 +17,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.leng.jingzhekt.Entity.Classify
+import org.w3c.dom.Text
 
 
 @Composable
-fun Keyboard(modifier: Modifier = Modifier){
+fun Keyboard(modifier: Modifier = Modifier,
+             onKeyPressed: (String) -> Unit = {},
+             onDelete: () -> Unit = {},
+             onDone: () -> Unit = {},){
     // 数字键盘
     Column(
         modifier = modifier
@@ -42,7 +47,15 @@ fun Keyboard(modifier: Modifier = Modifier){
             ) {
                 row.forEach { key ->
                     Button(
-                        onClick = { /* TODO: 处理键盘输入 */ },
+                        onClick = {
+                            when (key) {
+                                "⌫" -> onDelete()
+                                "完成" -> onDone()
+                                else -> {
+                                    onKeyPressed(key)
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .padding(4.dp)
