@@ -1,7 +1,3 @@
-# 远程MySQL数据库服务
-
-这个服务提供了访问远程MySQL数据库的完整解决方案，包括API接口、数据模型、网络配置和Repository模式。
-
 ## 🏗️ 架构概览
 
 ```
@@ -43,9 +39,9 @@ app/src/main/java/com/leng/jingzhekt/
 │   └── NetworkModule.kt                      # Hilt网络模块
 └── presentation/
     ├── viewmodel/
-    │   └── RemoteDataViewModel.kt            # 示例ViewModel
+    │   └── ViewModel.kt            # 示例ViewModel
     └── ui/screens/
-        └── RemoteDataScreen.kt               # 示例UI屏幕
+        └── Home.kt               #Ui界面
 ```
 
 ## 🚀 快速开始

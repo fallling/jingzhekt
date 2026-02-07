@@ -73,6 +73,7 @@ import com.leng.jingzhekt.presentation.viewmodel.ClassifyUiState
 import com.leng.jingzhekt.presentation.viewmodel.ClassifyViewModel
 import com.leng.jingzhekt.ui.components.Keyboard
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.math.log
 
 // 为 Preview 提供示例数据
 private fun getSampleClassifies(type: Type): List<Classify> {
@@ -223,13 +224,8 @@ fun BillClassificationContent(
     val tabs = listOf(Type.Expend, Type.Income)
     val navController = rememberNavController()
 
-    var amount by remember { mutableStateOf("0.0") }
-
-    // Type 到中文名称的映射
-    val typeToChineseName = mapOf(
-        Type.Expend to "支出",
-        Type.Income to "收入"
-    )
+    //金额
+    var amount by remember { mutableStateOf("0.00") }
 
     // 输入键盘焦点
     var mountInputState by remember { mutableStateOf(false) }
@@ -355,7 +351,37 @@ fun BillClassificationContent(
                         keyboardHeight.floatValue = layoutCoordinates.size.height.toFloat()
                     },
                 onKeyPressed = { key ->
-                    amount += key
+                    amount = appendAmountKey(amount, key )
+                },
+                onDelete = {
+                    if(amount != "0.00") {
+                        if (amount.length == 1) {
+                            amount = "0.00"
+                        } else {
+                            amount = amount.dropLast(1)
+                        }
+                    }
+                },
+                onPlusPressed ={
+                    if (amount.contains('+')) {
+                        val amounts = amount.split('+')
+                        amount = (amounts[0].toDouble() + amounts[1].toDouble()).toString().removeSuffix(".0")
+                        amount += "+"
+                    }else {
+                        if (amount != "0.00") amount += "+"
+                    }
+                },
+                onMinusPressed = {
+                    if (amount.contains('-')) {
+                        val amounts = amount.split('-')
+                        amount = (amounts[0].toDouble() - amounts[1].toDouble()).toString().removeSuffix(".0")
+                        amount += "-"
+                    }else {
+                        if (amount != "0.00") amount += "-"
+                    }
+                },
+                onDone = {
+
                 }
             )
 
@@ -546,7 +572,6 @@ private fun MinorClassifyGrid(
                 // 没有子分类，不显示任何内容
                 Spacer(modifier = Modifier.height(0.dp))
             }
-
             else -> {
                 // 显示子分类网格
                 val colCount = 5
@@ -619,7 +644,6 @@ fun KeyBoardInputView(
     amount: String
 ) {
     var remark by remember { mutableStateOf(TextFieldValue("")) }
-    //var amount by remember { mutableStateOf("0.00") }
     val focusManager = LocalFocusManager.current
     Column(
         modifier = modifier
@@ -651,7 +675,6 @@ fun KeyBoardInputView(
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true,
                     keyboardActions = KeyboardActions(onDone = {
-                        Log.d("lengzq", "KeyBoardInputView: 123123123")
                         onMountStateChange(false)
                     }),
                     trailingIcon = {
@@ -701,5 +724,50 @@ fun getTabString(type: Type): Int {
     return when(type){
         Type.Expend -> R.string.title_expend
         Type.Income -> R.string.title_income
+    }
+}
+
+
+//输出金额
+fun appendAmountKey(current: String, key: String): String {
+    // key 只允许 0-9 和 .
+    //if (key !in "0123456789+-.") return current
+
+    return when {
+
+        //+
+        current.contains('+') -> {
+            val amount1 = current.split("+")[0]
+            val amount2 = current.split("+")[1]
+            amount1 + "+" + appendAmountKey(amount2,key)
+        }
+        //-
+        current.contains('-') -> {
+            val amount1 = current.split("-")[0]
+            val amount2 = current.split("-")[1]
+            amount1 + "-" + appendAmountKey(amount2,key)
+        }
+
+        // 重新开始输入
+        current == "0.00" -> {
+            if (key == ".") "0." else key
+        }
+
+        // 防止多个小数点
+        key == "." && '.' in current -> current
+
+        // 防止小数点后超过2位
+        current.contains('.') && current.substringAfter('.').length >= 2 -> {
+                current
+        }
+
+        // 开头是0，按非零数字时替换
+        current == "0" && key != "0" && key != "." -> key
+
+        // 开头是0，按0时保持0（避免00）
+        current == "0" && key == "0" -> current
+
+        // 其他正常追加
+        else -> current + key
     }
 }
